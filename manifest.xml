@@ -1,0 +1,14 @@
+<package>
+  <description brief="Collision core for envire MLS">
+  
+  </description>
+  <author>Yong-Ho Yoo/yong-ho.yoo@dfki.de</author>
+  <license></license>
+  <url>http://</url>
+  <logo>http://</logo>
+  <depend package="base/cmake" />
+  <depend package="envire/envire_core" />
+  <depend package="slam/envire" />  
+  <depend package="simulation/ode" />
+  <depend package="envire/envire_collision" />    
+</package>
