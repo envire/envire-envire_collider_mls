@@ -33,8 +33,7 @@ protected:
                                            int flags, dContactGeom* contact, 
                                            int skip );
                                            
-    void  allocateHeightBuffer(size_t numX, size_t numZ);
-						
+					
 				
 
 };
