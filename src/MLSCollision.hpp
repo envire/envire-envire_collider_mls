@@ -14,7 +14,8 @@
 #include <envire_collision/collision_util.h>
 #include <envire_collision/config.h>
 
-#define MLSFIELDMAXCONTACTPERCELL 40   // maximum contacts per object
+#define MLSFIELDMAXCONTACTPERCELL 10   // maximum contacts per object
+#define TEMP_RECTANGULAR_BUFFER_ELEMENT_COUNT_ALIGNMENT 1
 
 namespace envire { namespace collision
 {
@@ -35,11 +36,14 @@ protected:
                                            int flags, dContactGeom* contact, 
                                            int skip );
                                            
-    dContactGeom   m_contacts[MLSFIELDMAXCONTACTPERCELL];	
+    dContactGeom   m_contacts;	
     //dContactGeom   BoxContact[MLSFIELDMAXCONTACTPERCELL];	    				
 				
 
 };
+
+static inline size_t AlignBufferSize(size_t value, size_t alignment) { dIASSERT((alignment & (alignment - 1)) == 0); 
+	return (value + (alignment - 1)) & ~(alignment - 1); }
 
 class MlsFieldVertex
 {
@@ -57,11 +61,4 @@ public:
     MlsFieldVertex   vertices[4];
 };
 
-class CollidingCellGroup
-{
-public:
-    CollidingCellGroup(){};
-
-    MlsFieldRectangular   rect[10];  //the number of colliding rect group 
-};
 }}
