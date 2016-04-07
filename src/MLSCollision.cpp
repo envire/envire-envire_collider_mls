@@ -3,6 +3,11 @@
 #define dMIN(A,B)  ((A)>(B) ? (B) : (A))
 #define dMAX(A,B)  ((A)>(B) ? (A) : (B))
 
+#define dOPESIGN(a, op1, op2,b) \
+     (a)[0] op1 op2 ((b)[0]); \
+     (a)[1] op1 op2 ((b)[1]); \
+     (a)[2] op1 op2 ((b)[2]);
+
 using namespace envire::collision;
 
 int MLSCollision::dCollideMlsfieldZone( const boost::shared_ptr<envire::MLSGrid>& mls,
@@ -13,6 +18,7 @@ int MLSCollision::dCollideMlsfieldZone( const boost::shared_ptr<envire::MLSGrid>
 {
 
     dContactGeom *pContact = 0;
+    int numTerrainContacts = 0;    
     int  x, z;
     // check if not above or inside terrain first
     // while filling a Mlsmap partial temporary buffer
@@ -25,11 +31,11 @@ int MLSCollision::dCollideMlsfieldZone( const boost::shared_ptr<envire::MLSGrid>
     dReal minY = dInfinity;
     
     unsigned int numCollidingCells = 0;
+    //dContactGeom BoxContact[10];// = m_contacts;     
+    dContactGeom *BoxContact = m_contacts;        
+    boost::shared_ptr<MlsFieldRectangular> grid_cell(new MlsFieldRectangular);       
+    boost::shared_ptr<CollidingCellGroup> grid_group(new CollidingCellGroup);
     
-    boost::shared_ptr<MlsFieldRectangular> grid_cell;           
-    boost::shared_ptr<MlsFieldRectangular> cell_group[10];
-    
-     
     std::cout << "numX numZ = " << numX << "," << numZ <<std::endl;
   	bool isACollide = false;
   	bool isBCollide = false;
@@ -45,73 +51,75 @@ int MLSCollision::dCollideMlsfieldZone( const boost::shared_ptr<envire::MLSGrid>
 		    {
 				MLSGrid::SurfacePatch p( *cit );  
 	            isACollide = p.mean > minO2Height;    				
-					grid_cell->vertices[0]->vertex[0] = x * mls->getScaleX();
-					grid_cell->vertices[0]->vertex[1] = p.mean;
-					grid_cell->vertices[0]->vertex[2] = z * mls->getScaleY();					
-	        }
+					grid_cell->vertices[0].vertex[0] = x * mls->getScaleX();
+					grid_cell->vertices[0].vertex[1] = p.mean;
+					grid_cell->vertices[0].vertex[2] = z * mls->getScaleY();					
+	        }  
 	       
 	 	    for( MLSGrid::iterator cit = mls->beginCell(x+1,z); cit != mls->endCell(); cit++ )
 		    {
 				MLSGrid::SurfacePatch p( *cit );  
 	            isBCollide = p.mean > minO2Height; 
-					grid_cell->vertices[1]->vertex[0] = x * mls->getScaleX();
-					grid_cell->vertices[1]->vertex[1] = p.mean;
-					grid_cell->vertices[1]->vertex[2] = z * mls->getScaleY();		            
+					grid_cell->vertices[1].vertex[0] = x * mls->getScaleX();
+					grid_cell->vertices[1].vertex[1] = p.mean;
+					grid_cell->vertices[1].vertex[2] = z * mls->getScaleY();		            
 					
 	        }      
 		    for( MLSGrid::iterator cit = mls->beginCell(x,z+1); cit != mls->endCell(); cit++ )
 		    {
 				MLSGrid::SurfacePatch p( *cit );  
 	            isCCollide = p.mean > minO2Height;  
-					grid_cell->vertices[2]->vertex[0] = x * mls->getScaleX();
-					grid_cell->vertices[2]->vertex[1] = p.mean;
-					grid_cell->vertices[2]->vertex[2] = z * mls->getScaleY();					
+					grid_cell->vertices[2].vertex[0] = x * mls->getScaleX();
+					grid_cell->vertices[2].vertex[1] = p.mean;
+					grid_cell->vertices[2].vertex[2] = z * mls->getScaleY();					
 	        }
 	 	    for( MLSGrid::iterator cit = mls->beginCell(x+1,z+1); cit != mls->endCell(); cit++ )
 		    {
 				MLSGrid::SurfacePatch p( *cit );  
 	            isDCollide = p.mean > minO2Height;
-					grid_cell->vertices[3]->vertex[0] = x * mls->getScaleX();
-					grid_cell->vertices[3]->vertex[1] = p.mean;
-					grid_cell->vertices[3]->vertex[2] = z * mls->getScaleY();					
+					grid_cell->vertices[3].vertex[0] = x * mls->getScaleX();
+					grid_cell->vertices[3].vertex[1] = p.mean;
+					grid_cell->vertices[3].vertex[2] = z * mls->getScaleY();					
 	        }      
 			if (isACollide || isBCollide || isCCollide || isDCollide)
 			{  
-				cell_group[numCollidingCells++] = grid_cell;
-
+					grid_group->rect[numCollidingCells++] = *grid_cell;
 			}               
 	       
 		}
 	}   
  
-
-
 	    int maxBoxNum = 4;
 	    double boxlength = 0.5;
 	    
 		dxBox* colliding_box[maxBoxNum];
 		for(int i=0; i<4; i++) colliding_box[i] = new dxBox (0,1,1,1);   //TODE space pointer has to be added
-
-
-
+      // dContactGeom cg[10];
+		//   int collided = dCollideSphereBox (o2, colliding_box[0], flags, &cg[0], skip);	
+		int collided = dCollideSphereBox (o2, colliding_box[0], flags, BoxContact, skip);			   
+    
     for (unsigned int k = 0; k < numCollidingCells; k++)
     {
 		for(unsigned int i=0;i<4;i++){   //we need to build 4 boxs per a rect
 		   //set positions and size of Boxs A,B,C,D from collision
-		   dVector3Copy(cell_group[k]->vertices[i]->vertex, colliding_box[i]->final_posr->pos); 
-		   colliding_box[i]->side[0] = cell_group[k]->vertices[1]->vertex[0]-cell_group[k]->vertices[0]->vertex[0];				   
+		   dVector3Copy(grid_group->rect[k].vertices[i].vertex, colliding_box[i]->final_posr->pos); 
+		   colliding_box[i]->side[0] = grid_group->rect[k].vertices[1].vertex[0]-grid_group->rect[k].vertices[0].vertex[0];
 		   colliding_box[i]->side[1] = boxlength;	
-		   colliding_box[i]->side[2] = cell_group[k]->vertices[2]->vertex[2]-cell_group[k]->vertices[0]->vertex[2];	
+		   colliding_box[i]->side[2] = grid_group->rect[k].vertices[2].vertex[2]-grid_group->rect[k].vertices[0].vertex[2];	
 		   colliding_box[i]->final_posr->pos[0] -= (colliding_box[i]->side[0]/2);   
 		   colliding_box[i]->final_posr->pos[1] = colliding_box[i]->final_posr->pos[1] - boxlength/2;  	
-		   colliding_box[i]->final_posr->pos[2] -= (colliding_box[i]->side[2]/2); 			   		   	   
-		  // int collided = dCollideSphereBox (o2, colliding_box[i], flags, BoxContact, skip);
+		   colliding_box[i]->final_posr->pos[2] -= (colliding_box[i]->side[2]/2); 	
+		   	
+		   printf("(k,i)=(%d %d) pos(%f %f %f)\n",k,i,colliding_box[i]->final_posr->pos[0],colliding_box[i]->final_posr->pos[1]
+					,colliding_box[i]->final_posr->pos[0]);		   		   	   
+		//   int collided = dCollideSphereBox (o2, colliding_box[i], flags, BoxContact, skip);
+	   
 
 		   //if(collided && numTerrainContacts < 4) {	   
   		       //pContact = CONTACT(contact, numTerrainContacts*skip);			   
 		       //dVector3Copy(BoxContact->pos, pContact->pos);
                ////create contact using Plane Normal
-               //dOPESIGN(pContact->normal, =, -, BoxContact->normal);	       
+               //dOPESIGN(pContact->normal, =, -, BoxContact->normal);	                      
 		       //pContact->depth = BoxContact->depth;	
        
  	           //numTerrainContacts++;	
@@ -120,9 +128,10 @@ int MLSCollision::dCollideMlsfieldZone( const boost::shared_ptr<envire::MLSGrid>
 		}
 
 	} 
+	for(int i=0; i<maxBoxNum; i++) delete colliding_box[i];   
+	printf("dCollideMlsfieldZone.......numTerrainContacts = %d \n",numTerrainContacts);
+	return numTerrainContacts;  
 
- 
-return 0;	
 }
 
 int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* contact, int skip, const boost::shared_ptr< envire::MLSGrid >& mls, int o2_class_id)
