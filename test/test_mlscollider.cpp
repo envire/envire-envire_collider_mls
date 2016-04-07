@@ -64,13 +64,13 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
         BOOST_CHECK(mls == user_data_a2);
 
         // create second geom
-        dxSphere* geom_sphere = new dxSphere(0, 1);
+        dxSphere* geom_sphere = new dxSphere(0, 0.1);
 		dGeomSetPosition (geom_sphere,0,0,0);        
         
         for(int i=1;i<100;i++)
         {
 
-       // dGeomSetPosition (geom_sphere,0,0,0-0.1*(float)i);
+        //dGeomSetPosition (geom_sphere,0,0,0-0.1*(float)i);
                 
         dContactGeom cg[10];
         int points = dCollide(geom_mls, geom_sphere, 1,  &cg[0], sizeof cg[0]);  

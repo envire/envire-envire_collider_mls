@@ -38,4 +38,20 @@ protected:
 
 };
 
+class MlsFieldVertex
+{
+public:
+    MlsFieldVertex(){};
+
+    dVector3 vertex;
+};
+
+class MlsFieldRectangular
+{
+public:
+    MlsFieldRectangular(){};
+
+    MlsFieldVertex   *vertices[4];
+};
+
 }}
