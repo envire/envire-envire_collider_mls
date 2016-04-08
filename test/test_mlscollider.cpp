@@ -64,17 +64,21 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
         BOOST_CHECK(mls == user_data_a2);
 
         // create second geom
-        dxSphere* geom_sphere = new dxSphere(0, 0.1);
-		dGeomSetPosition (geom_sphere,0,0,0);        
-        
-        for(int i=1;i<100;i++)
+        dxSphere* geom_sphere = new dxSphere(0, 0.05);
+		float ini_z = 1;
+        int maxNumContacts = 5;
+		dContact contact[maxNumContacts];   // the number of maximum contacts per a collision         
+        for(int k=0;k<10;k++)
         {
+			dGeomSetPosition (geom_sphere,0,1,ini_z-0.1*(float)k);
+			if(int numc = dCollide(geom_mls, geom_sphere, maxNumContacts,  &contact[0].geom, sizeof(dContact)))
+			{ 
+              for (int i=0; i<numc; i++) {
+		       printf("(k z: %d %f)(coll_num = %d) (%f %f %f)\n"
+		       ,k,ini_z-0.1*(float)k,i,contact[i].geom.pos[0],contact[i].geom.pos[1],contact[i].geom.pos[2]);  
+			  }       
+			}
 
-        //dGeomSetPosition (geom_sphere,0,0,0-0.1*(float)i);
-                
-        dContactGeom cg[10];
-        int points = dCollide(geom_mls, geom_sphere, 1,  &cg[0], sizeof cg[0]);  
-        printf("(NumOfCollision %d) (%f %f %f)\n",points,cg[0].pos[0],cg[0].pos[1],cg[0].pos[2]);
 		}        
         dGeomDestroy(geom_mls);
         dGeomDestroy(geom_sphere);
