@@ -29,7 +29,7 @@ protected:
 
     int collide (dGeomID o1, dGeomID o2, int flags, dContactGeom *contact, 
 						int skip, const boost::shared_ptr<envire::MLSGrid>& mls, int o2_class_id);
-	int dCollideMlsfieldZone( const boost::shared_ptr<envire::MLSGrid>& mls, 
+	int dCollideBoundingBox( const boost::shared_ptr<envire::MLSGrid>& mls, 
 										   const int minX, const int maxX, const int minZ, const int maxZ, 
                                            dxGeom* o2, const int numMaxContactsPossible,
                                            int flags, dContactGeom* contact, 
@@ -46,7 +46,6 @@ class MlsFieldVertex
 {
 public:
     MlsFieldVertex(){};
-
     dVector3 vertex;
 };
 
@@ -54,7 +53,6 @@ class MlsFieldRectangular
 {
 public:
     MlsFieldRectangular(){};
-
     MlsFieldVertex   vertices[4];
 };
 

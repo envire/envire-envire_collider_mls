@@ -10,7 +10,7 @@
 
 using namespace envire::collision;
 
-int MLSCollision::dCollideMlsfieldZone( const boost::shared_ptr<envire::MLSGrid>& mls,
+int MLSCollision::dCollideBoundingBox( const boost::shared_ptr<envire::MLSGrid>& mls,
 										   const int minX, const int maxX, const int minY, const int maxY, 
                                            dxGeom* o2, const int numMaxContactsPossible,
                                            int flags, dContactGeom* contact, 
@@ -176,9 +176,6 @@ printf(".totally under Mlsfield...minZ - maxO2Height > -dEpsilon(%f %f %f)\n",mi
 int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* contact, int skip, const boost::shared_ptr< envire::MLSGrid >& mls, int o2_class_id)
 {		
 		o2->computeAABB();
-		
-	printf("o2(%f:%f %f:%f %f:%f) \n",o2->aabb[0],o2->aabb[1],o2->aabb[2],o2->aabb[3],o2->aabb[4],o2->aabb[5]);		
-     // To narrow scope of following variables
         const dReal fInvScaleX = REAL(1.0) / mls->getScaleX();
         int nMinX = (int)dFloor(dNextAfter(o2->aabb[0] * fInvScaleX, -dInfinity));
         int nMaxX = (int)dCeil(dNextAfter(o2->aabb[1] * fInvScaleX, dInfinity));
@@ -196,7 +193,7 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
 		int numTerrainContacts = 0;
 		int numMaxTerrainContacts = flags;    
         
-        numTerrainContacts += dCollideMlsfieldZone(mls,
+        numTerrainContacts += dCollideBoundingBox(mls,
             nMinX,nMaxX,nMinY,nMaxY,o2,numMaxTerrainContacts,
             flags,CONTACT(contact,numTerrainContacts*skip),skip	);
       

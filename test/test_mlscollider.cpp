@@ -2,8 +2,8 @@
 #include <iostream>
 #include <ode/collision.h>
 #include <ode/common.h>
-#include <ode/rotation.h>
-#include <ode/matrix.h>
+//#include <ode/rotation.h>
+//#include <ode/matrix.h>
 #include <ode/odemath.h>
 #include <envire_collision/collision_kernel.h>
 #include <envire_collision/collision_std.h>
@@ -12,9 +12,7 @@
 
 #include <envire_core/items/Item.hpp>
 #include <envire_collision/Exceptions.hpp>
-
 #include <envire_collider_mls/MLSCollision.hpp>
-
 
 #include <envire/Core.hpp>
 #include <envire/maps/GridBase.hpp>
