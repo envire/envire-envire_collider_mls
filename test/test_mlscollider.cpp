@@ -65,17 +65,21 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
 
         // create second geom
         dxSphere* geom_sphere = new dxSphere(0, 0.05);
-		float ini_z = 1;
+		float ini_z = 1.0f;
         int maxNumContacts = 5;
-		dContact contact[maxNumContacts];   // the number of maximum contacts per a collision         
+		dContact contact[maxNumContacts];   // the number of maximum contacts per a collision  
+		
+    dReal pos[3]={0.0f, 0.0f, 0.0f};  
+
         for(int k=0;k<10;k++)
         {
-			dGeomSetPosition (geom_sphere,0,1,ini_z-0.1*(float)k);
+			dGeomSetPosition (geom_sphere,0,0,ini_z-0.1*(float)k);
+			const dReal *pos2 = dGeomGetPosition(geom_sphere);
 			if(int numc = dCollide(geom_mls, geom_sphere, maxNumContacts,  &contact[0].geom, sizeof(dContact)))
 			{ 
               for (int i=0; i<numc; i++) {
-		       printf("(k z: %d %f)(coll_num = %d) (%f %f %f)\n"
-		       ,k,ini_z-0.1*(float)k,i,contact[i].geom.pos[0],contact[i].geom.pos[1],contact[i].geom.pos[2]);  
+		       printf("(k z pos[2]: %d %f %f)(coll_num = %d) (%f %f %f)\n"
+		       ,k,ini_z-0.1*(float)k,pos2[2],i,contact[i].geom.pos[0],contact[i].geom.pos[1],contact[i].geom.pos[2]);  
 			  }       
 			}
 
