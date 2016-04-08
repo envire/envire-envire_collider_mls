@@ -14,7 +14,6 @@
 #include <envire_collision/collision_util.h>
 #include <envire_collision/config.h>
 
-#define MLSFIELDMAXCONTACTPERCELL 10   // maximum contacts per object
 #define TEMP_RECTANGULAR_BUFFER_ELEMENT_COUNT_ALIGNMENT 1
 
 namespace envire { namespace collision
@@ -36,9 +35,7 @@ protected:
                                            int flags, dContactGeom* contact, 
                                            int skip );
                                            
-    dContactGeom   m_contacts;	
-    //dContactGeom   BoxContact[MLSFIELDMAXCONTACTPERCELL];	    				
-				
+    dContactGeom   mls_contacts;	
 
 };
 
