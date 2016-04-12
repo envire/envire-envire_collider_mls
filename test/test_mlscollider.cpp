@@ -46,8 +46,8 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
 		envire::MLSGrid::Ptr mlsgrid_ptr(env->getItem<envire::MLSGrid>(mls_map_id));		
 		boost::shared_ptr<envire::MLSGrid> mls(mlsgrid_ptr.get(), NullDeleter());
 	
-		//printf("mls.cellSizeX = (%d %d)\n",	mls->getCellSizeX(),	mls->getCellSizeY());
-
+		printf("mls.cellSizeX = (%d %d)\n",	mls->getCellSizeX(),	mls->getCellSizeY());
+	
         // create first geom
         dGeomID geom_mls = c->createNewCollisionObject(mls);
         //c->setTransformation(geom_a, Eigen::Affine3d::Identity());
@@ -62,16 +62,16 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
         BOOST_CHECK(mls == user_data_a2);
 
         // create second geom
-        dxSphere* geom_sphere = new dxSphere(0, 0.05);
+        dxSphere* geom_sphere = new dxSphere(0, 0.5);
 		float ini_z = 1.0f;
         int maxNumContacts = 5;
 		dContact contact[maxNumContacts];   // the number of maximum contacts per a collision  
 		
     dReal pos[3]={0.0f, 0.0f, 0.0f};  
 
-        for(int k=0;k<10;k++)
+        for(int k=0;k<100;k++)
         {
-			dGeomSetPosition (geom_sphere,0,0,ini_z-0.1*(float)k);
+			dGeomSetPosition (geom_sphere,0.1,0.1,ini_z-0.1*(float)k);
 			const dReal *pos2 = dGeomGetPosition(geom_sphere);
 			if(int numc = dCollide(geom_mls, geom_sphere, maxNumContacts,  &contact[0].geom, sizeof(dContact)))
 			{ 

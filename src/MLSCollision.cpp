@@ -32,7 +32,6 @@ int MLSCollision::dCollideBoundingBox( const boost::shared_ptr<envire::MLSGrid>&
     dReal minZ = dInfinity;
     const unsigned int numRectMax = (maxX - minX) * (maxY - minY);  
     
-
     size_t alignedNumRect = AlignBufferSize(numRectMax, TEMP_RECTANGULAR_BUFFER_ELEMENT_COUNT_ALIGNMENT);
     MlsFieldRectangular *rects = new MlsFieldRectangular[alignedNumRect]; 
     MlsFieldRectangular rect;
@@ -46,60 +45,101 @@ int MLSCollision::dCollideBoundingBox( const boost::shared_ptr<envire::MLSGrid>&
     {
 		for ( y = minY, y_local = 0; y_local < numY; y++, y_local++) 	
 		{
-			int count =0;
-		    for( MLSGrid::iterator cit = mls->beginCell(x,y); cit != mls->endCell(); cit++ )
-		    {
-				MLSGrid::SurfacePatch p( *cit );  
-	            isACollide = p.mean > minO2Height;    			
-					rect.vertices[0].vertex[0] = x * mls->getScaleX();
-					rect.vertices[0].vertex[1] = y * mls->getScaleY();	 
-					rect.vertices[0].vertex[2] = p.mean;
-                maxZ = dMAX(maxZ, p.mean);
-                minZ = dMIN(minZ, p.mean);            
-printf("(x,y)=(%d %d) pos(%f %f %f)\n",x,y,rect.vertices[0].vertex[0],rect.vertices[0].vertex[1],rect.vertices[0].vertex[2]);							
-		
-	        }    
-	 	    for( MLSGrid::iterator cit = mls->beginCell(x+1,y); cit != mls->endCell(); cit++ )
-		    {
-				MLSGrid::SurfacePatch p( *cit );  
-	            isBCollide = p.mean > minO2Height; 
-					rect.vertices[1].vertex[0] = (x+1) * mls->getScaleX();
-					rect.vertices[1].vertex[1] = y * mls->getScaleY();
-					rect.vertices[1].vertex[2] = p.mean;         
-                maxZ = dMAX(maxZ, p.mean);
-                minZ = dMIN(minZ, p.mean);  					
-printf("(x,y)=(%d %d) pos(%f %f %f)\n",x+1,y,rect.vertices[1].vertex[0],rect.vertices[1].vertex[1],rect.vertices[1].vertex[2]);					  
-					
-	        }    
-		    for( MLSGrid::iterator cit = mls->beginCell(x,y+1); cit != mls->endCell(); cit++ )
-		    {
-				MLSGrid::SurfacePatch p( *cit );  
-	            isCCollide = p.mean > minO2Height;  
-					rect.vertices[2].vertex[0] = x * mls->getScaleX();
-					rect.vertices[2].vertex[1] = (y+1) * mls->getScaleY();
-					rect.vertices[2].vertex[2] = p.mean; 
-                maxZ = dMAX(maxZ, p.mean);
-                minZ = dMIN(minZ, p.mean);  
-printf("(x,y)=(%d %d) pos(%f %f %f)\n",x,y+1,rect.vertices[2].vertex[0],rect.vertices[2].vertex[1],rect.vertices[2].vertex[2]);									
-	        } 
-	 	    for( MLSGrid::iterator cit = mls->beginCell(x+1,y+1); cit != mls->endCell(); cit++ )
-		    {
-				MLSGrid::SurfacePatch p( *cit );  
-	            isDCollide = p.mean > minO2Height;
-					rect.vertices[3].vertex[0] = (x+1) * mls->getScaleX();
-					rect.vertices[3].vertex[1] = (y+1) * mls->getScaleY();
-					rect.vertices[3].vertex[2] = p.mean; 	
-                maxZ = dMAX(maxZ, p.mean);
-                minZ = dMIN(minZ, p.mean);  
-printf("(x,y)=(%d %d) pos(%f %f %f)\n",x+1,y+1,rect.vertices[3].vertex[0],rect.vertices[3].vertex[1],rect.vertices[3].vertex[2]);								
-	        }     
+			MLSGrid::iterator A = mls->beginCell(x,y);
+			if (A == mls->endCell()) {
+						rect.vertices[0].vertex[0] = x * mls->getScaleX();
+						rect.vertices[0].vertex[1] = y * mls->getScaleY();
+						rect.vertices[0].is = false;	 
+			}
+			else{
+				    for( A; A != mls->endCell(); A++ )
+				    {
+						MLSGrid::SurfacePatch p( *A );  
+			            isACollide = p.mean > minO2Height;  
+							rect.vertices[0].vertex[0] = x * mls->getScaleX();
+							rect.vertices[0].vertex[1] = y * mls->getScaleY();	 
+							rect.vertices[0].vertex[2] = p.mean;
+							rect.vertices[0].is = true;	
+								
+		                maxZ = dMAX(maxZ, p.mean);
+		                minZ = dMIN(minZ, p.mean);            
+//printf("(x,y)=(%d %d) pos(%f %f %f)\n",x,y,rect.vertices[0].vertex[0],rect.vertices[0].vertex[1],rect.vertices[0].vertex[2]);							
+				
+			        }   
+		    } 
+			MLSGrid::iterator B = mls->beginCell(x+1,y);
+			if (B == mls->endCell()) {
+						rect.vertices[1].vertex[0] = (x+1) * mls->getScaleX();
+						rect.vertices[1].vertex[1] = y * mls->getScaleY();	 
+						rect.vertices[1].is = false;						
+			}
+			else{
+				    for( B; B != mls->endCell(); B++ )
+				    {
+						MLSGrid::SurfacePatch p( *B );  
+			            isACollide = p.mean > minO2Height;  
+							rect.vertices[1].vertex[0] = (x+1) * mls->getScaleX();
+							rect.vertices[1].vertex[1] = y * mls->getScaleY();	 
+							rect.vertices[1].vertex[2] = p.mean;
+							rect.vertices[1].is = true;	
+								
+		                maxZ = dMAX(maxZ, p.mean);
+		                minZ = dMIN(minZ, p.mean);            
+//printf("(x+1,y)=(%d %d) pos(%f %f %f)\n",x+1,y,rect.vertices[1].vertex[0],rect.vertices[1].vertex[1],rect.vertices[1].vertex[2]);							
+				
+			        }   
+		    } 
+			MLSGrid::iterator C = mls->beginCell(x,y+1);
+			if (C == mls->endCell()) {
+						rect.vertices[2].vertex[0] = x * mls->getScaleX();
+						rect.vertices[2].vertex[1] = (y+1) * mls->getScaleY();	
+						rect.vertices[2].is = false; 
+			}
+			else{
+				    for( C; C != mls->endCell(); C++ )
+				    {
+						MLSGrid::SurfacePatch p( *C );  
+			            isACollide = p.mean > minO2Height;  
+							rect.vertices[2].vertex[0] = x * mls->getScaleX();
+							rect.vertices[2].vertex[1] = (y+1) * mls->getScaleY();	 
+							rect.vertices[2].vertex[2] = p.mean;
+							rect.vertices[2].is = true;	
+								
+		                maxZ = dMAX(maxZ, p.mean);
+		                minZ = dMIN(minZ, p.mean);            
+//printf("(x,y+1)=(%d %d) pos(%f %f %f)\n",x,y,rect.vertices[2].vertex[0],rect.vertices[2].vertex[1],rect.vertices[2].vertex[2]);							
+				
+			        }   
+		    }
+			MLSGrid::iterator D = mls->beginCell(x+1,y+1);
+			if (D == mls->endCell()) {
+						rect.vertices[3].vertex[0] = (x+1) * mls->getScaleX();
+						rect.vertices[3].vertex[1] = (y+1) * mls->getScaleY();	
+						rect.vertices[3].is = false; 
+			}
+			else{
+				    for( D; D != mls->endCell(); D++ )
+				    {
+						MLSGrid::SurfacePatch p( *D );  
+			            isACollide = p.mean > minO2Height;  
+							rect.vertices[3].vertex[0] = (x+1) * mls->getScaleX();
+							rect.vertices[3].vertex[1] = (y+1) * mls->getScaleY();	 
+							rect.vertices[3].vertex[2] = p.mean;
+							rect.vertices[3].is = true;	
+								
+		                maxZ = dMAX(maxZ, p.mean);
+		                minZ = dMIN(minZ, p.mean);            
+//printf("(x+1,y+1)=(%d %d) pos(%f %f %f)\n",x,y,rect.vertices[3].vertex[0],rect.vertices[3].vertex[1],rect.vertices[3].vertex[2]);							
+				
+			        }   
+		    } 		     		    		    
+
+     
 			if (isACollide || isBCollide || isCCollide || isDCollide)
 			{  
 				//printf("numCollidingCells = %d alignedNumRect = %d numRectMax = %d\n",numCollidingCells,alignedNumRect,numRectMax);
-				rects[numCollidingRects++] = rect;	
-//printf("......numCollidingCells = %d........\n",numCollidingRects-1);			
-			}               
-
+				rects[numCollidingRects++] = rect;		
+			}			
 		}
 	}   
 
@@ -128,7 +168,7 @@ printf(".totally above Mlsfield...(minO2Height - maxZ > -dEpsilon) (%f %f %f)\n"
 
             pContact->side1 = -1;
             pContact->side2 = -1;
-printf(".totally under Mlsfield...minZ - maxO2Height > -dEpsilon(%f %f %f)\n",minZ, minO2Height,-dEpsilon);
+printf(".totally under Mlsfield...minZ - maxO2Height > -dEpsilon(%f %f %f)\n",minZ, maxO2Height,-dEpsilon);
             return 1;
 //			return numTerrainContacts++;
         }
@@ -142,28 +182,35 @@ printf(".totally under Mlsfield...minZ - maxO2Height > -dEpsilon(%f %f %f)\n",mi
     for (unsigned int k = 0; k < numCollidingRects; k++)
     {
 		for(unsigned int i=0;i<4;i++){   //we need to build 4 boxs per a rect (k*4 loops)
+
+			if(rect.vertices[i].is == false) rect.vertices[i].vertex[2] = minZ;  //in case that mls has no value
+			
 		   //set positions and size of Boxs A,B,C,D from collision
 		   dVector3Copy(rects[k].vertices[i].vertex, colliding_box[i]->final_posr->pos); 
-		   colliding_box[i]->side[0] = rects[k].vertices[1].vertex[0] - rects[k].vertices[0].vertex[0];
-		   colliding_box[i]->side[1] = rects[k].vertices[2].vertex[1] - rects[k].vertices[0].vertex[1];			   
+		   colliding_box[i]->side[0] = mls->getScaleX(); //abs(rects[k].vertices[1].vertex[0] - rects[k].vertices[0].vertex[0]);
+		   colliding_box[i]->side[1] = mls->getScaleX();//abs(rects[k].vertices[2].vertex[1] - rects[k].vertices[0].vertex[1]);			   
 		   colliding_box[i]->side[2] = boxlength;	
 
 		   colliding_box[i]->final_posr->pos[0] -= (colliding_box[i]->side[0]/2);   
-		   colliding_box[i]->final_posr->pos[1] -= (colliding_box[i]->side[2]/2); 	
+		   colliding_box[i]->final_posr->pos[1] -= (colliding_box[i]->side[1]/2); 	
 		   colliding_box[i]->final_posr->pos[2] = colliding_box[i]->final_posr->pos[2] - boxlength/2;  	
 		   										
 		int collided = dCollideSphereBox (o2, colliding_box[i], flags, &mls_contacts, skip);			
-
+  
 		   if(collided && (numTerrainContacts < numMaxContactsPossible)) {	  			   
   		       pContact = CONTACT(contact, numTerrainContacts*skip);			   
 		       dVector3Copy(mls_contacts.pos, pContact->pos);
                //create contact using Plane Normal
                dOPESIGN(pContact->normal, =, -, mls_contacts.normal);	                      
 		       pContact->depth = mls_contacts.depth;	
-       
- 	           numTerrainContacts++;	
+	printf("i=%d ++collided++, (x, y, z: %f, %f, %f)\n", i, pContact->pos[0],pContact->pos[1],pContact->pos[2]);  
+	           numTerrainContacts++;	 		
 		   } 
-		   
+
+	//printf("i=%d not collided, (Px, Py, Pz: %f, %f, %f)\n", i, colliding_box[i]->final_posr->pos[0]
+					//,colliding_box[i]->final_posr->pos[1],colliding_box[i]->final_posr->pos[2]);       
+	//printf("not collided, (Sx, Sy, Sz: %f, %f, %f)\n", colliding_box[i]->side[0]
+					//,colliding_box[i]->side[1],colliding_box[i]->side[2]);    	   
 		}
 
 	} 
@@ -176,17 +223,21 @@ printf(".totally under Mlsfield...minZ - maxO2Height > -dEpsilon(%f %f %f)\n",mi
 int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* contact, int skip, const boost::shared_ptr< envire::MLSGrid >& mls, int o2_class_id)
 {		
 		o2->computeAABB();
+printf("aabb(%f:%f %f:%f %f:%f)\n",o2->aabb[0],o2->aabb[1],o2->aabb[2],o2->aabb[3],o2->aabb[4],o2->aabb[5]);		
         const dReal fInvScaleX = REAL(1.0) / mls->getScaleX();
         int nMinX = (int)dFloor(dNextAfter(o2->aabb[0] * fInvScaleX, -dInfinity));
         int nMaxX = (int)dCeil(dNextAfter(o2->aabb[1] * fInvScaleX, dInfinity));
         const dReal fInvScaleY = REAL( 1.0 ) / mls->getScaleY();
-        int nMinY = (int)dFloor(dNextAfter(o2->aabb[4] * fInvScaleY, -dInfinity));
-        int nMaxY = (int)dCeil(dNextAfter(o2->aabb[5] * fInvScaleY, dInfinity));
+        int nMinY = (int)dFloor(dNextAfter(o2->aabb[2] * fInvScaleY, -dInfinity));
+        int nMaxY = (int)dCeil(dNextAfter(o2->aabb[3] * fInvScaleY, dInfinity));   //TODO: test fInvScaleY size!!
 
 		nMinX = dMAX( nMinX, 0 );
 		nMaxX = dMIN( nMaxX, mls->getCellSizeX() - 1);  //select overlabing area between o1 and o2
 		nMinY = dMAX( nMinY, 0 );
 		nMaxY = dMIN( nMaxY, mls->getCellSizeY() - 1);
+		
+ std::cout << "\n ...nMinX, nMaxX, nMinY, nMaxY : " << nMinX <<","<< nMaxX <<","<< nMinY <<","<< nMaxY<<std::endl;    
+ std::cout << "\n ...Height =  " << mls->getHeight()<<std::endl;  		
 	 
 		dIASSERT ((nMinX < nMaxX) && (nMinY < nMaxY));
 

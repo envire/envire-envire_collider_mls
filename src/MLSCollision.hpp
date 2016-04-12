@@ -47,6 +47,7 @@ class MlsFieldVertex
 public:
     MlsFieldVertex(){};
     dVector3 vertex;
+    bool is;    
 };
 
 class MlsFieldRectangular
