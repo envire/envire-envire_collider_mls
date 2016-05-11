@@ -22,10 +22,10 @@ namespace envire { namespace collision
 class MLSCollision : public ODECollision<envire::MLSGrid>
 {
     ENVIRE_ODE_COLLISION_HEADER(MLSCollision)
-
+   
 protected:
 
-    void getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<envire::MLSGrid>& mls);
+    void getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<envire::MLSGrid>& mls);    
 
     int collide (dGeomID o1, dGeomID o2, int flags, dContactGeom *contact, 
 						int skip, const boost::shared_ptr<envire::MLSGrid>& mls, int o2_class_id);
@@ -34,8 +34,15 @@ protected:
                                            dxGeom* o2, const int numMaxContactsPossible,
                                            int flags, dContactGeom* contact, 
                                            int skip );
-                                           
     dContactGeom   mls_contacts;	
+    dReal       MinHeight;
+    dReal       MaxHeight;    
+    dReal       widthX;
+    dReal       widthY;  
+    dReal  		HalfWidthX;
+    dReal  		HalfWidthY;  
+    
+    int	WrapMode;           // Heightfield wrapping mode (0=finite, 1=infinite)
 
 };
 
