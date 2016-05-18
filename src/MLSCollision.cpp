@@ -18,7 +18,7 @@
 
 using namespace envire::collision;
 
-int MLSCollision::dCollideBoundingBox( const boost::shared_ptr<envire::MLSGrid>& mls,
+int MLSCollision::dCollideSphereMls( const boost::shared_ptr<envire::MLSGrid>& mls,
 										   const int minX, const int maxX, const int minY, const int maxY, 
                                            dxGeom* o2, const int numMaxContactsPossible,
                                            int flags, dContactGeom* contact, 

@@ -14,6 +14,7 @@
 #include <envire_collision/collision_util.h>
 #include <envire_collision/config.h>
 
+
 #define TEMP_RECTANGULAR_BUFFER_ELEMENT_COUNT_ALIGNMENT 1
 
 namespace envire { namespace collision
@@ -29,7 +30,7 @@ protected:
 
     int collide (dGeomID o1, dGeomID o2, int flags, dContactGeom *contact, 
 						int skip, const boost::shared_ptr<envire::MLSGrid>& mls, int o2_class_id);
-	int dCollideBoundingBox( const boost::shared_ptr<envire::MLSGrid>& mls, 
+	int dCollideSphereMls( const boost::shared_ptr<envire::MLSGrid>& mls, 
 										   const int minX, const int maxX, const int minZ, const int maxZ, 
                                            dxGeom* o2, const int numMaxContactsPossible,
                                            int flags, dContactGeom* contact, 
