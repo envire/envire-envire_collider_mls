@@ -18,7 +18,7 @@
 #include <envire/maps/GridBase.hpp>
 #include <envire/maps/MLSGrid.hpp>
 #include <envire/operators/MLSToGrid.hpp>
-#include <envire/operators/MLSToMLSGeom.hpp>
+
 #include <boost/scoped_ptr.hpp>
 #include <boost/intrusive_ptr.hpp>
 
