@@ -24,7 +24,6 @@ int MLSCollision::dCollideSphereMls( const boost::shared_ptr<envire::MLSGrid>& m
                                            int flags, dContactGeom* contact, 
                                            int skip )
 {	
-printf("in BoundingBox ..aabb(%f:%f %f:%f %f:%f)\n",o2->aabb[0],o2->aabb[1],o2->aabb[2],o2->aabb[3],o2->aabb[4],o2->aabb[5]);	
     dContactGeom *pContact = 0;
     int numTerrainContacts = 0;  
     unsigned int numCollidingRects = 0;      
@@ -39,7 +38,6 @@ printf("in BoundingBox ..aabb(%f:%f %f:%f %f:%f)\n",o2->aabb[0],o2->aabb[1],o2->
     dReal maxZ = - dInfinity;
     dReal minZ = dInfinity;
     const unsigned int numRectMax = (maxX - minX) * (maxY - minY);  
-  printf("in BoundingBox ..numRectMax = %d...1 \n", numRectMax);	
   
     size_t alignedNumRect = AlignBufferSize(numRectMax, TEMP_RECTANGULAR_BUFFER_ELEMENT_COUNT_ALIGNMENT);
     MlsFieldRectangular *rects = new MlsFieldRectangular[alignedNumRect]; 
@@ -49,7 +47,7 @@ printf("in BoundingBox ..aabb(%f:%f %f:%f %f:%f)\n",o2->aabb[0],o2->aabb[1],o2->
   	bool isBCollide = false;
   	bool isCCollide = false;
   	bool isDCollide = false; 
-	  printf("in BoundingBox ...2..numX numY (%d %d). \n", numX, numY);	
+
 	for ( x = minX, x_local = 0; x_local < numX; x++, x_local++)    
     {
 		for ( y = minY, y_local = 0; y_local < numY; y++, y_local++) 	
@@ -72,7 +70,6 @@ printf("in BoundingBox ..aabb(%f:%f %f:%f %f:%f)\n",o2->aabb[0],o2->aabb[1],o2->
 								
 		                maxZ = dMAX(maxZ, p.mean);
 		                minZ = dMIN(minZ, p.mean);            
-//printf("(x,y)=(%d %d) pos(%f %f %f)\n",x,y,rect.vertices[0].vertex[0],rect.vertices[0].vertex[1],rect.vertices[0].vertex[2]);							
 				
 			        }   
 		    } 
@@ -94,7 +91,6 @@ printf("in BoundingBox ..aabb(%f:%f %f:%f %f:%f)\n",o2->aabb[0],o2->aabb[1],o2->
 								
 		                maxZ = dMAX(maxZ, p.mean);
 		                minZ = dMIN(minZ, p.mean);            
-//printf("(x+1,y)=(%d %d) pos(%f %f %f)\n",x+1,y,rect.vertices[1].vertex[0],rect.vertices[1].vertex[1],rect.vertices[1].vertex[2]);							
 				
 			        }   
 		    } 
@@ -116,7 +112,6 @@ printf("in BoundingBox ..aabb(%f:%f %f:%f %f:%f)\n",o2->aabb[0],o2->aabb[1],o2->
 								
 		                maxZ = dMAX(maxZ, p.mean);
 		                minZ = dMIN(minZ, p.mean);            
-//printf("(x,y+1)=(%d %d) pos(%f %f %f)\n",x,y,rect.vertices[2].vertex[0],rect.vertices[2].vertex[1],rect.vertices[2].vertex[2]);							
 				
 			        }   
 		    }
@@ -138,7 +133,6 @@ printf("in BoundingBox ..aabb(%f:%f %f:%f %f:%f)\n",o2->aabb[0],o2->aabb[1],o2->
 								
 		                maxZ = dMAX(maxZ, p.mean);
 		                minZ = dMIN(minZ, p.mean);            
-//printf("(x+1,y+1)=(%d %d) pos(%f %f %f)\n",x,y,rect.vertices[3].vertex[0],rect.vertices[3].vertex[1],rect.vertices[3].vertex[2]);							
 				
 			        }   
 		    } 		     		    		    
@@ -212,20 +206,11 @@ printf(".totally under Mlsfield...minZ - maxO2Height > -dEpsilon(%f %f %f)\n",mi
                //create contact using Plane Normal
                dOPESIGN(pContact->normal, =, -, mls_contacts.normal);	                      
 		       pContact->depth = mls_contacts.depth;	
-	printf("i=%d ++collided++, (x, y, z: %f, %f, %f)\n", i, pContact->pos[0],pContact->pos[1],pContact->pos[2]); 
-	
-	printf("---o2o2(%f %f %f)\n",o2->final_posr->pos[0],o2->final_posr->pos[1],o2->final_posr->pos[2]);  
-printf("---0--p(%f %f %f), n(%f %f %f) d(%f), s(%d)\n",pContact->pos[0],pContact->pos[1],pContact->pos[2],
-pContact->normal[0],pContact->normal[1],pContact->normal[2],pContact->depth, pContact->side1);   
-	
 	 
 	           numTerrainContacts++;	 		
 		   } 
 
-	//printf("i=%d not collided, (Px, Py, Pz: %f, %f, %f)\n", i, colliding_box[i]->final_posr->pos[0]
-					//,colliding_box[i]->final_posr->pos[1],colliding_box[i]->final_posr->pos[2]);       
-	//printf("not collided, (Sx, Sy, Sz: %f, %f, %f)\n", colliding_box[i]->side[0]
-					//,colliding_box[i]->side[1],colliding_box[i]->side[2]);    	   
+ 	   
 		}
 
 	} 
@@ -233,6 +218,7 @@ pContact->normal[0],pContact->normal[1],pContact->normal[2],pContact->depth, pCo
 	delete[] rects;  
 	printf("dCollideMlsfieldZone.......numTerrainContacts = %d \n",numTerrainContacts);
 	return numTerrainContacts;
+
 }
 
 int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* contact, int skip, const boost::shared_ptr< envire::MLSGrid >& mls, int o2_class_id)
@@ -241,20 +227,7 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
     dIASSERT( o1->type == 14 );
     dIASSERT((flags & NUMC_MASK) >= 1);
 	      
-	  //dMatrix3 R;
-	  //dRSetIdentity(R);
-      //dRFromAxisAndAngle(R, 1, 0, 0, M_PI/2);
-      //dGeomSetRotation(o1, R);
-	
-    // if ((flags & NUMC_MASK) == 0) -- An assertion check is made on entry
-    //	{ flags = (flags & ~NUMC_MASK) | 1; dIASSERT((1 & ~NUMC_MASK) == 0); }
-
     int numMaxTerrainContacts = (flags & NUMC_MASK);
-
-        printf("flags, NUMC_MASK, numMaxTerrainContacts (%d %d %d)..\n", flags, NUMC_MASK, numMaxTerrainContacts);
-
-printf("before recomp.AABB   o2->aabb (%f, %f, %f, %f, %f, %f)\n", o2->aabb[0],o2->aabb[1],o2->aabb[2]
-          ,o2->aabb[3],o2->aabb[4],o2->aabb[5]);
 
     dVector3 posbak;
     dMatrix3 Rbak;
@@ -271,7 +244,7 @@ printf("before recomp.AABB   o2->aabb (%f, %f, %f, %f, %f, %f)\n", o2->aabb[0],o
     // so that we can free some memory and speed up things a bit
     // while saving some precision loss 
 #ifndef DHEIGHTFIELD_CORNER_ORIGIN
-        printf("corner:..\n");
+
     const bool reComputeAABB = true;
 #else
     const bool reComputeAABB = ( terrain->gflags & GEOM_PLACEABLE ) ? true : false;
@@ -288,7 +261,6 @@ printf("before recomp.AABB   o2->aabb (%f, %f, %f, %f, %f, %f)\n", o2->aabb[0],o
 	
     //if ( o1->gflags & GEOM_PLACEABLE )
     //{	
-		        printf("corner:..2 \n");
         // Transform o2 into heightfield space.
         dSubtractVectors3( pos0, o2->final_posr->pos, o1->final_posr->pos );
         dMultiply1_331( pos1, o1->final_posr->R, pos0 );
@@ -336,13 +308,7 @@ printf("before recomp.AABB   o2->aabb (%f, %f, %f, %f, %f, %f)\n", o2->aabb[0],o
         const dReal fInvScaleY = REAL( 1.0 ) / mls->getScaleY();
         int nMinY = (int)dFloor(dNextAfter(o2->aabb[2] * fInvScaleY, -dInfinity));
         int nMaxY = (int)dCeil(dNextAfter(o2->aabb[3] * fInvScaleY, dInfinity));   //TODO: test fInvScaleY size!!
-printf("o2->aabb (%f, %f, %f, %f, %f, %f)\n", o2->aabb[0],o2->aabb[1],o2->aabb[2]
-          ,o2->aabb[3],o2->aabb[4],o2->aabb[5]);
 
-printf("o2->aabb[0] * fInvScaleX = %f, nMinX, nMaxX, nMinY, nMaxY(%d, %d, %d, %d)\n"
-		,o2->aabb[0] * fInvScaleX,nMinX ,nMaxX, nMinY, nMaxY);
-printf("o2->aabb[1] * fInvScaleX = %f, nMinX, nMaxX, nMinY, nMaxY(%d, %d, %d, %d)\n"
-		,o2->aabb[1] * fInvScaleX,nMinX ,nMaxX, nMinY, nMaxY);
 
 		nMinX = dMAX( nMinX, 0 );
 		nMaxX = dMIN( nMaxX, mls->getCellSizeX() - 1);  //select overlabing area between o1 and o2
@@ -350,14 +316,12 @@ printf("o2->aabb[1] * fInvScaleX = %f, nMinX, nMaxX, nMinY, nMaxY(%d, %d, %d, %d
 		nMaxY = dMIN( nMaxY, mls->getCellSizeY() - 1);
 	
 		
- std::cout << "\n ...nMinX, nMaxX, nMinY, nMaxY : " << nMinX <<","<< nMaxX <<","<< nMinY <<","<< nMaxY<<std::endl;    
- std::cout << "\n ...ScaleX =  " << mls->getScaleX()<< "...ScaleY =  " << mls->getScaleY()<<std::endl;  		
  
 		dIASSERT ((nMinX < nMaxX) && (nMinY < nMaxY));
 
 		int numMaxTerrainContacts = flags;    
  	       
-        numTerrainContacts += dCollideBoundingBox(mls,
+        numTerrainContacts += dCollideSphereMls(mls,
             nMinX,nMaxX,nMinY,nMaxY,o2,numMaxTerrainContacts,
             flags,CONTACT(contact,numTerrainContacts*skip),skip	);
     printf("num collided---func---------- %d\n", numTerrainContacts);
@@ -423,23 +387,12 @@ dCollideHeightfieldExit:
     // Return contact count.    
     printf("num collided------------- %d\n", numTerrainContacts);
      return numTerrainContacts;   
+
 }
 
 
 void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<envire::MLSGrid>& mls){	
 
-
-            //aabb[0] = -dInfinity;					aabb[1] = +dInfinity;
-            //aabb[2] = -dInfinity;					aabb[3] = +dInfinity;          
-            aabb[0] = -10.0;					aabb[1] = +10.0;
-            aabb[2] = -10.0;					aabb[3] = +10.0;                   
-            aabb[4] = -2.0;		aabb[5] = 2.0;
-            
-
-            printf("+++++++  getAABB is called\n");	
-            
- // compute axis aligned bounding box
- // const dxHeightfieldData *d = m_p_data;
  
            MinHeight = -2.0;
            MaxHeight =  2.0;
@@ -573,8 +526,8 @@ void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<en
     }
           
                 printf("aabb(%f %f)(%f %f)(%f %f)\n", aabb[0],aabb[1], aabb[2],aabb[3], aabb[4],aabb[5]);	        
-            
-	}
+           
+}
 
 
 
