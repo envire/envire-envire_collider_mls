@@ -5,10 +5,10 @@
 //#include <ode/rotation.h>
 //#include <ode/matrix.h>
 #include <ode/odemath.h>
-#include <envire_collision/collision_kernel.h>
-#include <envire_collision/collision_std.h>
-#include <envire_collision/collision_util.h>
-#include <envire_collision/config.h>
+#include <envire_collider_mls/collision_kernel.h>
+#include <envire_collider_mls/collision_std.h>
+#include <envire_collider_mls/collision_util.h>
+#include <envire_collider_mls/config.h>
 
 #include <envire_core/items/Item.hpp>
 #include <envire_collision/Exceptions.hpp>
@@ -22,6 +22,8 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/intrusive_ptr.hpp>
 
+
+
 using namespace envire::collision;
 using namespace envire;
 
@@ -33,14 +35,13 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
     dInitODE();
     {
 		
-		
         MLSCollision* c = MLSCollision::getInstance();
         BOOST_CHECK(c != NULL);
         BOOST_CHECK(c->getGeomID() == -1);
         
 		std::string env_path("mls_data");
 		std::string mls_map_id("/mls-grid");
-
+	
 			
 		boost::scoped_ptr<envire::Environment> env(envire::Environment::unserialize(env_path));   
 		envire::MLSGrid::Ptr mlsgrid_ptr(env->getItem<envire::MLSGrid>(mls_map_id));		
@@ -51,6 +52,8 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
         // create first geom
         dGeomID geom_mls = c->createNewCollisionObject(mls);
         //c->setTransformation(geom_a, Eigen::Affine3d::Identity());
+      printf("**1000**** mls->type= %d \n",geom_mls->type); 
+
 
         // check interface
         BOOST_CHECK(c->getGeomID() >= dFirstUserClass);
@@ -62,7 +65,7 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
         BOOST_CHECK(mls == user_data_a2);
 
         // create second geom
-        dxSphere* geom_sphere = new dxSphere(0, 0.5);
+        dxSphere* geom_sphere = new dxSphere(0, 0.05);
 		float ini_z = 1.0f;
         int maxNumContacts = 5;
 		dContact contact[maxNumContacts];   // the number of maximum contacts per a collision  
