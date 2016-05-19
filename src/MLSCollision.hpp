@@ -9,10 +9,10 @@
 #include <ode/rotation.h>
 #include <ode/matrix.h>
 #include <ode/odemath.h>
-#include <envire_collision/collision_kernel.h>
-#include <envire_collision/collision_std.h>
-#include <envire_collision/collision_util.h>
-#include <envire_collision/config.h>
+#include <envire_collider_mls/collision_kernel.h>
+#include <envire_collider_mls/collision_std.h>
+#include <envire_collider_mls/collision_util.h>
+#include <envire_collider_mls/config.h>
 
 
 #define TEMP_RECTANGULAR_BUFFER_ELEMENT_COUNT_ALIGNMENT 1
