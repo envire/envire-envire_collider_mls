@@ -52,9 +52,15 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
         // create first geom
         dGeomID geom_mls = c->createNewCollisionObject(mls);
         //c->setTransformation(geom_a, Eigen::Affine3d::Identity());
-      printf("**1000**** mls->type= %d \n",geom_mls->type); 
-
-
+        BOOST_CHECK(geom_mls->type == 14);
+      
+        c->widthX  = mls->getCellSizeX()*mls->getScaleX();
+        c->widthY  = mls->getCellSizeY()*mls->getScaleY();   		
+      
+        geom_mls->aabb[0] = -10.0;					geom_mls->aabb[1] = +10.0;
+        geom_mls->aabb[2] = -10.0;					geom_mls->aabb[3] = +10.0;                   
+        geom_mls->aabb[4] = -2.0;					geom_mls->aabb[5] = 2.0;
+        
         // check interface
         BOOST_CHECK(c->getGeomID() >= dFirstUserClass);
         BOOST_CHECK(dGeomGetClass(geom_mls) == c->getGeomID());
@@ -70,11 +76,10 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
         int maxNumContacts = 5;
 		dContact contact[maxNumContacts];   // the number of maximum contacts per a collision  
 		
-    dReal pos[3]={0.0f, 0.0f, 0.0f};  
 
         for(int k=0;k<100;k++)
         {
-			dGeomSetPosition (geom_sphere,0.1,0.1,ini_z-0.1*(float)k);
+			dGeomSetPosition (geom_sphere,0.0,0.0,ini_z-0.1*(float)k);
 			const dReal *pos2 = dGeomGetPosition(geom_sphere);
 			if(int numc = dCollide(geom_mls, geom_sphere, maxNumContacts,  &contact[0].geom, sizeof(dContact)))
 			{ 
