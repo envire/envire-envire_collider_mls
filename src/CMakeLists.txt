@@ -12,4 +12,7 @@ rock_library(envire_collider_mls
             odeou.h
             odetls.h  
     DEPS_CMAKE Boost
-    DEPS_PKGCONFIG ode envire_core envire envire_collision)
+    DEPS_PKGCONFIG maps ode envire_core envire_collision)
+    
+    
+    
