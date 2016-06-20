@@ -9,6 +9,7 @@
   <depend package="base/cmake" />
   <depend package="envire/envire_core" />
   <depend package="simulation/ode" />
-  <depend package="envire/envire_collision" />    
-  <depend package="slam/envire" />   
+  <depend package="envire/envire_collision" /> 
+  <depend package="slam/maps" />  
+   <tags>needs_opt</tags>  
 </package>
