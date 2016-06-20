@@ -9,5 +9,6 @@
 			
 rock_executable(test2 test2_mlscollider.cpp
     DEPS_CMAKE Boost
+    DEPS envire_collider_mls
     DEPS_PKGCONFIG maps)			
 

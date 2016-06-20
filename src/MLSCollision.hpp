@@ -1,7 +1,7 @@
 #pragma once
 
 #include <envire_collision/ODECollision.hpp>
-#include <envire/maps/MLSGrid.hpp>
+#include <maps/grid/MLSMap.hpp>
 
 #include <iostream>
 #include <ode/collision.h>
@@ -20,7 +20,7 @@
 namespace envire { namespace collision
 {
 
-class MLSCollision : public ODECollision<envire::MLSGrid>
+class MLSCollision : public ODECollision<maps::grid::MLSMapKalman>
 {
     ENVIRE_ODE_COLLISION_HEADER(MLSCollision)
 
@@ -34,11 +34,11 @@ public:
        
 protected:
 
-    void getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<envire::MLSGrid>& mls);    
+    void getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<maps::grid::MLSMapKalman>& mls);    
 
     int collide (dGeomID o1, dGeomID o2, int flags, dContactGeom *contact, 
-						int skip, const boost::shared_ptr<envire::MLSGrid>& mls, int o2_class_id);
-	int dCollideSphereMls( const boost::shared_ptr<envire::MLSGrid>& mls, 
+						int skip, const boost::shared_ptr<maps::grid::MLSMapKalman>& mls, int o2_class_id);
+	int dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapKalman>& mls, 
 										   const int minX, const int maxX, const int minZ, const int maxZ, 
                                            dxGeom* o2, const int numMaxContactsPossible,
                                            int flags, dContactGeom* contact, 

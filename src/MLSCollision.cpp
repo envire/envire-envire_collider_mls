@@ -18,7 +18,151 @@
 
 using namespace envire::collision;
 
-int MLSCollision::dCollideSphereMls( const boost::shared_ptr<envire::MLSGrid>& mls,
+int MLSCollision::dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapKalman>& mls,
+										   const int minX, const int maxX, const int minY, const int maxY, 
+                                           dxGeom* o2, const int numMaxContactsPossible,
+                                           int flags, dContactGeom* contact, 
+                                           int skip )
+{	
+    dContactGeom *pContact = 0;
+    int numTerrainContacts = 0;  
+    unsigned int numCollidingRects = 0;      
+    int  x, y;
+    // check if not above or inside terrain first
+    // while filling a Mlsmap partial temporary buffer
+    const unsigned int numX = maxX - minX;
+    const unsigned int numY = maxY - minY;
+    const dReal minO2Height = o2->aabb[4];
+    const dReal maxO2Height = o2->aabb[5];
+    unsigned int x_local, y_local;
+    dReal maxZ = - dInfinity;
+    dReal minZ = dInfinity;
+    const unsigned int numRectMax = (maxX - minX) * (maxY - minY);  
+  
+    unsigned int alignedNumRect = AlignBufferSize(numRectMax, TEMP_RECTANGULAR_BUFFER_ELEMENT_COUNT_ALIGNMENT);
+    MlsFieldRectangular *rects = new MlsFieldRectangular[alignedNumRect]; 
+    MlsFieldRectangular rect;
+
+  	bool isCollide[4];
+  	for(int i = 0; i<4; i++) isCollide[i] = false;
+  	
+	for ( x = minX, x_local = 0; x_local < numX; x++, x_local++)    
+    {
+		for ( y = minY, y_local = 0; y_local < numY; y++, y_local++) 	
+		{
+            for( int x1 = 0 ; x1<2; x1++) {
+            for( int y1 = 0 ; y1<2; y1++) {
+			   
+			    maps::grid::MLSMapKalman::CellType::iterator patch = mls->at(x+x1,y+y1).begin();
+				if (patch == mls->at(x+x1,y+y1).end()) {
+							rect.vertices[x1+y1].vertex[0] = (x+x1) * mls->getResolution().x();
+							rect.vertices[x1+y1].vertex[1] = (y+y1) * mls->getResolution().y();
+							rect.vertices[x1+y1].is = false;	 
+				}
+				else{
+					    for(patch = mls->at(x+x1,y+y1).begin(); patch != mls->at(x+x1,y+y1).end(); patch++ )
+					    {
+				            isCollide[x1+y1] = patch->mean > minO2Height;  
+								rect.vertices[x1+y1].vertex[0] = (x+x1) * mls->getResolution().x();
+								rect.vertices[x1+y1].vertex[1] = (y+y1) * mls->getResolution().y();	 
+								rect.vertices[x1+y1].vertex[2] = patch->mean;
+								rect.vertices[x1+y1].is = true;	
+									
+			                maxZ = dMAX(maxZ, patch->mean);
+			                minZ = dMIN(minZ, patch->mean);            
+					
+				        }   
+			    } 
+		    }}
+		
+			if (isCollide[0] || isCollide[1] || isCollide[2] || isCollide[3])
+			{  
+				printf("numCollidingRects = %d alignedNumRect = %d numRectMax = %d\n",numCollidingRects,alignedNumRect,numRectMax);
+				rects[numCollidingRects++] = rect;		
+			}				
+		
+		}
+	}   
+/*
+        if (minO2Height - maxZ > -dEpsilon )    //TODO: make clear!!
+        {
+            //totally above Mlsfield
+printf(".totally above Mlsfield...(minO2Height - maxZ > -dEpsilon) (%f %f %f)\n",minO2Height,maxZ,-dEpsilon);            
+            return 0;
+        }
+        
+        if (minZ - maxO2Height > -dEpsilon )
+        {
+            // totally under Mlsfield
+            pContact = CONTACT(contact, 0);			//set pointer of dContactGeom....YH
+
+            pContact->pos[0] = o2->final_posr->pos[0];
+            pContact->pos[1] = o2->final_posr->pos[1];            
+            pContact->pos[2] = minZ;
+
+
+            pContact->normal[0] = 0;
+            pContact->normal[1] = 0;
+            pContact->normal[2] = -1;
+
+            pContact->depth =  minZ - maxO2Height;
+
+            pContact->side1 = -1;
+            pContact->side2 = -1;
+printf(".totally under Mlsfield...minZ - maxO2Height > -dEpsilon(%f %f %f)\n",minZ, maxO2Height,-dEpsilon);
+            return 1;
+//			return numTerrainContacts++;
+        }
+        
+	    int maxBoxNum = 4;
+	    double boxlength = 0.5;
+	    
+		dxBox* colliding_box[maxBoxNum];
+		for(int i=0; i<4; i++) colliding_box[i] = new dxBox (0,1,1,1);   //TODE space pointer has to be added
+    
+    for (unsigned int k = 0; k < numCollidingRects; k++)
+    {
+		for(unsigned int i=0;i<4;i++){   //we need to build 4 boxs per a rect (k*4 loops)
+
+			if(rect.vertices[i].is == false) rect.vertices[i].vertex[2] = minZ;  //in case that mls has no value
+			
+		   //set positions and size of Boxs A,B,C,D from collision
+		   dVector3Copy(rects[k].vertices[i].vertex, colliding_box[i]->final_posr->pos); 
+		   colliding_box[i]->side[0] = mls->getScaleX(); //abs(rects[k].vertices[1].vertex[0] - rects[k].vertices[0].vertex[0]);
+		   colliding_box[i]->side[1] = mls->getScaleY();//abs(rects[k].vertices[2].vertex[1] - rects[k].vertices[0].vertex[1]);			   
+		   colliding_box[i]->side[2] = rects[k].vertices[i].vertex[2]; //boxlength;	
+
+		   colliding_box[i]->final_posr->pos[0] -= (colliding_box[i]->side[0]/2);   
+		   colliding_box[i]->final_posr->pos[1] -= (colliding_box[i]->side[1]/2); 	
+		   colliding_box[i]->final_posr->pos[2] /= 2; // boxlength/2;  	
+		   										
+		int collided = dCollideSphereBox (o2, colliding_box[i], flags, &mls_contacts, skip);			
+  
+		   if(collided && (numTerrainContacts < numMaxContactsPossible)) {	  			   
+  		       pContact = CONTACT(contact, numTerrainContacts*skip);			   
+		       dVector3Copy(mls_contacts.pos, pContact->pos);
+               //create contact using Plane Normal
+               dOPESIGN(pContact->normal, =, -, mls_contacts.normal);	                      
+		       pContact->depth = mls_contacts.depth;	
+	 
+	           numTerrainContacts++;	 		
+		   } 
+
+ 	   
+		}
+
+	} 
+	for(int i=0; i<maxBoxNum; i++) delete colliding_box[i];   
+	delete[] rects;  
+	printf("dCollideMlsfieldZone.......numTerrainContacts = %d \n",numTerrainContacts);
+	
+	return numTerrainContacts;
+*/
+}
+
+
+/*
+int MLSCollision::dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapKalman>& mls,
 										   const int minX, const int maxX, const int minY, const int maxY, 
                                            dxGeom* o2, const int numMaxContactsPossible,
                                            int flags, dContactGeom* contact, 
@@ -220,9 +364,11 @@ printf(".totally under Mlsfield...minZ - maxO2Height > -dEpsilon(%f %f %f)\n",mi
 	return numTerrainContacts;
 
 }
+*/
 
-int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* contact, int skip, const boost::shared_ptr< envire::MLSGrid >& mls, int o2_class_id)
+int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* contact, int skip, const boost::shared_ptr< maps::grid::MLSMapKalman >& mls, int o2_class_id)
 {
+/*
 	dIASSERT( skip >= (int)sizeof(dContactGeom) );
     dIASSERT( o1->type == 14 );
     dIASSERT((flags & NUMC_MASK) >= 1);
@@ -261,7 +407,7 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
 	
     //if ( o1->gflags & GEOM_PLACEABLE )
     //{	
-        // Transform o2 into heightfield space.
+        // Transform o2 into mls space.
         dSubtractVectors3( pos0, o2->final_posr->pos, o1->final_posr->pos );
         dMultiply1_331( pos1, o1->final_posr->R, pos0 );
         dMultiply1_333( R1, o1->final_posr->R, o2->final_posr->R );
@@ -386,13 +532,14 @@ dCollideHeightfieldExit:
     }
     // Return contact count.    
     printf("num collided------------- %d\n", numTerrainContacts);
-     return numTerrainContacts;   
-
+    return numTerrainContacts;   
+*/ return 0;
 }
 
 
-void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<envire::MLSGrid>& mls){	
-
+void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<maps::grid::MLSMapKalman>& mls)
+{	
+/*
  
            MinHeight = -2.0;
            MaxHeight =  2.0;
@@ -526,7 +673,7 @@ void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<en
     }
           
                 printf("aabb(%f %f)(%f %f)(%f %f)\n", aabb[0],aabb[1], aabb[2],aabb[3], aabb[4],aabb[5]);	        
-           
+ */          
 }
 
 
