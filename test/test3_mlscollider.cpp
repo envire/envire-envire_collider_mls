@@ -4,55 +4,40 @@
 #include <maps/grid/MLSMap.hpp>
 
 #include <boost/test/unit_test.hpp>
-#include <envire_core/items/Item.hpp>
-#include <envire_collision/Exceptions.hpp>
 #include <envire_collider_mls/MLSCollision.hpp>
 
-#include <ode/collision.h>
-#include <ode/common.h>
-#include <ode/odemath.h>
+#include <boost/shared_ptr.hpp>
 
 using namespace envire::collision;
 
 BOOST_AUTO_TEST_CASE(test_box_collision)
 {
 
-        MLSCollision* c = MLSCollision::getInstance();
-        BOOST_CHECK(c != NULL);
-        BOOST_CHECK(c->getGeomID() == -1);
-        
-		//std::string env_path("mls_data");
-		//std::string mls_map_id("/mls-grid");
+    dInitODE();
+    {
+		MLSCollision* c = MLSCollision::getInstance();
+		BOOST_CHECK(c != NULL);
+		BOOST_CHECK(c->getGeomID() == -1);
 	
-			
-		//boost::scoped_ptr<envire::Environment> env(envire::Environment::unserialize(env_path));   
-		//envire::MLSGrid::Ptr mlsgrid_ptr(env->getItem<envire::MLSGrid>(mls_map_id));		
-		//boost::shared_ptr<envire::MLSGrid> mls(mlsgrid_ptr.get(), NullDeleter());
+		std::ifstream input("MLSMapKalman_waves.bin",  std::ios::binary);
+		boost::archive::polymorphic_binary_iarchive  ia(input);
 	
-//		std::string env_path("MLSMapKalman_waves.bin");	
-//	std::ifstream input(argv[1],  std::ios::binary);
-//	boost::archive::polymorphic_binary_iarchive  ia(env_path);
-//	maps::grid::MLSMapSloped mls;
-
-
-	//maps::grid::MLSMapKalman mls;
-
-	//ia >> mls;
+		maps::grid::MLSMapKalman mls_kalman;
+		ia >> mls_kalman;
 	
-    //mls.getLocalFrame().translation() << 0.5*mls.getSize(), 0;	
-    //double test = mls.at(0,0).begin()->mean;
-    //printf("at..%lf\n", test);	
+	    boost::shared_ptr<maps::grid::MLSMapKalman> mls(&mls_kalman);     
 	
-	/*
-		printf("mls.cellSizeX = (%d %d)\n",	mls->getCellSizeX(),	mls->getCellSizeY());
+	    printf("mls resolution = (%lf %lf)\n", mls->getResolution().x(),mls->getResolution().y() );
+	    printf("mls cell number (x, y = %d, %d)\n", mls->getNumCells().x(),mls->getNumCells().y() );	
+	    printf("mls size = (%lf %lf)\n", mls->getSize().x(),mls->getSize().y());
+	    printf("mls mean value on (x,y) = %lf\n", mls->at(0,0).begin()->mean);  
+	            
+		// create first geom
+		dGeomID geom_mls = c->createNewCollisionObject(mls);
+		BOOST_CHECK(geom_mls->type == 14);
 	
-        // create first geom
-        dGeomID geom_mls = c->createNewCollisionObject(mls);
-        //c->setTransformation(geom_a, Eigen::Affine3d::Identity());
-        BOOST_CHECK(geom_mls->type == 14);
-      
-        c->widthX  = mls->getCellSizeX()*mls->getScaleX();
-        c->widthY  = mls->getCellSizeY()*mls->getScaleY();   		
+        c->widthX  = mls->getSize().x();
+        c->widthY  = mls->getSize().y();   		
       
         geom_mls->aabb[0] = -10.0;					geom_mls->aabb[1] = +10.0;
         geom_mls->aabb[2] = -10.0;					geom_mls->aabb[3] = +10.0;                   
@@ -62,7 +47,7 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
         BOOST_CHECK(c->getGeomID() >= dFirstUserClass);
         BOOST_CHECK(dGeomGetClass(geom_mls) == c->getGeomID());
 
-        boost::shared_ptr<envire::MLSGrid> user_data_a2 = c->getUserData(geom_mls);
+        boost::shared_ptr<maps::grid::MLSMapKalman> user_data_a2 = c->getUserData(geom_mls);
 
         //BOOST_CHECK(user_data_a.use_count() == 3);
         BOOST_CHECK(mls == user_data_a2);
@@ -89,6 +74,7 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
 		}        
         dGeomDestroy(geom_mls);
         dGeomDestroy(geom_sphere);
-*/
+    }
+    dCloseODE();
 
 }
