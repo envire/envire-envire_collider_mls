@@ -208,29 +208,21 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
     o2->final_posr->pos[ 0 ] += HalfWidthX;
     o2->final_posr->pos[ 1 ] += HalfWidthY;
 #endif // DHEIGHTFIELD_CORNER_ORIGIN   
-	
 		
     // Rebuild AABB for O2
     if (reComputeAABB)
         o2->computeAABB();
-		
-    //check if inside boundaries
-    //using O2 aabb
-    //aabb[6] is (minx, maxx, miny, maxy, minz, maxz) 
-    const bool wrapped = WrapMode != 0;
-
-	//if totally above Mlsfield
-    if ( !wrapped )
-    {
-        if (    o2->aabb[0] > widthX //MinX
-            ||  o2->aabb[2] > widthY)//MinY>
-            goto dCollideMlsExit;
-
-        if (    o2->aabb[1] < 0 //MaxX
-            ||  o2->aabb[3] < 0)//MaxY
-            goto dCollideMlsExit;
-    }		
-		
+        
+    //This has to be true in case to use infinite surface 
+	const bool wrapped = WrapMode != 0;
+	
+	//if o2 is not overlaid in x-y plane, we will pass by the collision function 
+	if ( !wrapped )
+	{
+		if (o2->aabb[0] > widthX || o2->aabb[2] > widthY) goto dCollideMlsExit;
+		if (o2->aabb[1] < 0 || o2->aabb[3] < 0) goto dCollideMlsExit;
+    }	
+    
 	{
         const dReal fInvScaleX = REAL(1.0) / mls->getResolution().x();
         int nMinX = (int)dFloor(dNextAfter(o2->aabb[0] * fInvScaleX, -dInfinity));
@@ -324,7 +316,7 @@ void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<ma
            widthX  = mls->getNumCells().x()*mls->getResolution().x();
            widthY  = mls->getNumCells().y()*mls->getResolution().y();
            bool gflags = true;
-           bool WrapMode = false;
+           bool WrapMode = false;  //This has to be true in case to use infinite surface
            
 		   HalfWidthX = widthX/REAL(2.0);
 		   HalfWidthY = widthY/REAL(2.0);
