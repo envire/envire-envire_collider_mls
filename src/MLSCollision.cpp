@@ -161,7 +161,7 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
     dIASSERT( o1->type == 14 );
     dIASSERT((flags & NUMC_MASK) >= 1);
 	      
-    int numMaxTerrainContacts = (flags & NUMC_MASK);
+    //int numMaxTerrainContacts = (flags & NUMC_MASK);
 
     dVector3 posbak;
     dMatrix3 Rbak;
@@ -242,9 +242,9 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
 
 		//select overlabing area between o1 and o2
 		nMinX = dMAX( nMinX, 0 );
-		nMaxX = dMIN( nMaxX, mls->getNumCells().x() - 1);  
+		nMaxX = dMIN( nMaxX, (int)(mls->getNumCells().x() - 1));  
 		nMinY = dMAX( nMinY, 0 );
-		nMaxY = dMIN( nMaxY, mls->getNumCells().y() - 1);
+		nMaxY = dMIN( nMaxY, (int)(mls->getNumCells().y() - 1));
  
 		dIASSERT ((nMinX < nMaxX) && (nMinY < nMaxY));
 
