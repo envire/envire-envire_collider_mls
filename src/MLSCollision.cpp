@@ -77,29 +77,26 @@ int MLSCollision::dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapK
 		
 			if (isCollide[0] || isCollide[1] || isCollide[2] || isCollide[3])
 			{  
-				printf("numCollidingRects = %d alignedNumRect = %d numRectMax = %d\n",numCollidingRects,alignedNumRect,numRectMax);
 				rects[numCollidingRects++] = rect;		
 			}				
 		
 		}
 	}   
 
-        if (minO2Height - maxZ > -dEpsilon )    //TODO: make clear!!
+        if (minO2Height - maxZ > -dEpsilon ) 
         {
             //totally above Mlsfield
-printf(".totally above Mlsfield...(minO2Height - maxZ > -dEpsilon) (%f %f %f)\n",minO2Height,maxZ,-dEpsilon);            
             return 0;
         }
         
         if (minZ - maxO2Height > -dEpsilon )
         {
             // totally under Mlsfield
-            pContact = CONTACT(contact, 0);			//set pointer of dContactGeom....YH
+            pContact = CONTACT(contact, 0);	
 
             pContact->pos[0] = o2->final_posr->pos[0];
             pContact->pos[1] = o2->final_posr->pos[1];            
             pContact->pos[2] = minZ;
-
 
             pContact->normal[0] = 0;
             pContact->normal[1] = 0;
@@ -109,9 +106,7 @@ printf(".totally above Mlsfield...(minO2Height - maxZ > -dEpsilon) (%f %f %f)\n"
 
             pContact->side1 = -1;
             pContact->side2 = -1;
-printf(".totally under Mlsfield...minZ - maxO2Height > -dEpsilon(%f %f %f)\n",minZ, maxO2Height,-dEpsilon);
-            return 1;
-//			return numTerrainContacts++;
+            return 0;
         }
         
 	int maxBoxNum = 4;
@@ -153,7 +148,6 @@ printf(".totally under Mlsfield...minZ - maxO2Height > -dEpsilon(%f %f %f)\n",mi
 	} 
 	for(int i=0; i<maxBoxNum; i++) delete colliding_box[i];   
 	delete[] rects;  
-	printf("dCollideMlsfieldZone.......numTerrainContacts = %d \n",numTerrainContacts);
 	
 	return numTerrainContacts;
 
@@ -259,7 +253,6 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
         numTerrainContacts += dCollideSphereMls(mls,
             nMinX,nMaxX,nMinY,nMaxY,o2,numMaxTerrainContacts,
             flags,CONTACT(contact,numTerrainContacts*skip),skip	);
-    printf("num collided---func---------- %d\n", numTerrainContacts);
     
         dIASSERT( numTerrainContacts <= numMaxTerrainContacts );
     }
@@ -283,8 +276,6 @@ dCollideMlsExit:
         memcpy( o2->aabb, aabbbak, sizeof(dReal)*6 );
         o2->gflags = gflagsbak;
         
-        printf("dCollideHeightfieldExit:..\n");
-
         //
         // Transform Contacts to World Space
         //
@@ -321,9 +312,7 @@ dCollideMlsExit:
 #endif // !DHEIGHTFIELD_CORNER_ORIGIN
     }
     // Return contact count.    
-    printf("num collided------------- %d\n", numTerrainContacts);
     return numTerrainContacts;   
-  return 0; 
 }
 
 
@@ -461,7 +450,7 @@ void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<ma
         }
     }
           
-                printf("aabb(%f %f)(%f %f)(%f %f)\n", aabb[0],aabb[1], aabb[2],aabb[3], aabb[4],aabb[5]);	        
+   
            
 }
 
