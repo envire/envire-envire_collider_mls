@@ -199,8 +199,7 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
         gflagsbak = o2->gflags;
     }
 	
-    //if ( o1->gflags & GEOM_PLACEABLE )
-    //{	
+
         // Transform o2 into mls space.
         dSubtractVectors3( pos0, o2->final_posr->pos, o1->final_posr->pos );
         dMultiply1_331( pos1, o1->final_posr->R, pos0 );
@@ -209,7 +208,6 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
         // Update o2 with transformed position and rotation.
         dVector3Copy( pos1, o2->final_posr->pos );
         dMatrix3Copy( R1, o2->final_posr->R );
-	//}
 
           
 #ifndef DHEIGHTFIELD_CORNER_ORIGIN
@@ -223,19 +221,20 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
         o2->computeAABB();
 		
     //check if inside boundaries
-    // using O2 aabb
-    //  aabb[6] is (minx, maxx, miny, maxy, minz, maxz) 
+    //using O2 aabb
+    //aabb[6] is (minx, maxx, miny, maxy, minz, maxz) 
     const bool wrapped = WrapMode != 0;
 
+	//if totally above Mlsfield
     if ( !wrapped )
     {
         if (    o2->aabb[0] > widthX //MinX
             ||  o2->aabb[2] > widthY)//MinY>
-            goto dCollideHeightfieldExit;
+            goto dCollideMlsExit;
 
         if (    o2->aabb[1] < 0 //MaxX
             ||  o2->aabb[3] < 0)//MaxY
-            goto dCollideHeightfieldExit;
+            goto dCollideMlsExit;
     }		
 		
 	{
@@ -243,19 +242,15 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
         int nMinX = (int)dFloor(dNextAfter(o2->aabb[0] * fInvScaleX, -dInfinity));
         int nMaxX = (int)dCeil(dNextAfter(o2->aabb[1] * fInvScaleX, dInfinity));
         
- //        int nMaxX = (int)dCeil(dNextAfter(o2->aabb[1] * fInvSampleWidth, dInfinity));       
-        
         const dReal fInvScaleY = REAL( 1.0 ) / mls->getResolution().y();
         int nMinY = (int)dFloor(dNextAfter(o2->aabb[2] * fInvScaleY, -dInfinity));
-        int nMaxY = (int)dCeil(dNextAfter(o2->aabb[3] * fInvScaleY, dInfinity));   //TODO: test fInvScaleY size!!
+        int nMaxY = (int)dCeil(dNextAfter(o2->aabb[3] * fInvScaleY, dInfinity));   
 
-
+		//select overlabing area between o1 and o2
 		nMinX = dMAX( nMinX, 0 );
-		nMaxX = dMIN( nMaxX, mls->getNumCells().x() - 1);  //select overlabing area between o1 and o2
+		nMaxX = dMIN( nMaxX, mls->getNumCells().x() - 1);  
 		nMinY = dMAX( nMinY, 0 );
 		nMaxY = dMIN( nMaxY, mls->getNumCells().y() - 1);
-	
-		
  
 		dIASSERT ((nMinX < nMaxX) && (nMinY < nMaxY));
 
@@ -265,6 +260,7 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
             nMinX,nMaxX,nMinY,nMaxY,o2,numMaxTerrainContacts,
             flags,CONTACT(contact,numTerrainContacts*skip),skip	);
     printf("num collided---func---------- %d\n", numTerrainContacts);
+    
         dIASSERT( numTerrainContacts <= numMaxTerrainContacts );
     }
         dContactGeom *pContact;
@@ -278,7 +274,7 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
         pContact->side2 = -1;
     }
     
-dCollideHeightfieldExit:
+dCollideMlsExit:
     if (reComputeAABB)
     {
         // Restore o2 position, rotation and AABB
