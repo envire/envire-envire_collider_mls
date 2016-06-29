@@ -31,7 +31,8 @@ public:
     dReal       widthY;  
     dReal  		HalfWidthX;
     dReal  		HalfWidthY;  
-       
+
+      
 protected:
 
     void getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<maps::grid::MLSMapKalman>& mls);    
@@ -40,11 +41,8 @@ protected:
 						int skip, const boost::shared_ptr<maps::grid::MLSMapKalman>& mls, int o2_class_id);
 	int dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapKalman>& mls, 
 										   const int minX, const int maxX, const int minZ, const int maxZ, 
-                                           dxGeom* o2, const int numMaxContactsPossible,
-                                           int flags, dContactGeom* contact, 
-                                           int skip );
+                                           dxGeom* o2, int flags, dContactGeom* contact, int skip );
     dContactGeom   mls_contacts;	
-
     
     int	WrapMode;           // Heightfield wrapping mode (0=finite, 1=infinite)
 
