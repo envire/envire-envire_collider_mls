@@ -15,15 +15,17 @@
      
 //#define DHEIGHTFIELD_CORNER_ORIGIN
 #define GEOM_PLACEABLE 1
+#define DEBUG_AABB
+#define DEBUG_CONTACT_POS
 
 using namespace envire::collision;
 
 int MLSCollision::dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapKalman>& mls,
 										   const int minX, const int maxX, const int minY, const int maxY, 
-                                           dxGeom* o2, const int numMaxContactsPossible,
-                                           int flags, dContactGeom* contact, 
+                                           dxGeom* o2, int flags, dContactGeom* contact, 
                                            int skip )
 {	
+     
     dContactGeom *pContact = 0;
     int numTerrainContacts = 0;  
     unsigned int numCollidingRects = 0;      
@@ -38,6 +40,10 @@ int MLSCollision::dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapK
     dReal maxZ = - dInfinity;
     dReal minZ = dInfinity;
     const unsigned int numRectMax = (maxX - minX) * (maxY - minY);  
+    
+#ifdef DEBUG_CONTACT_POS				
+			printf("(maxX , minX):(%d %d), (maxY , minY):(%d %d)\n",maxX , minX , maxY , minY);
+#endif 
   
     unsigned int alignedNumRect = AlignBufferSize(numRectMax, TEMP_RECTANGULAR_BUFFER_ELEMENT_COUNT_ALIGNMENT);
     MlsFieldRectangular *rects = new MlsFieldRectangular[alignedNumRect]; 
@@ -50,27 +56,27 @@ int MLSCollision::dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapK
     {
 		for ( y = minY, y_local = 0; y_local < numY; y++, y_local++) 	
 		{
-            for( int x1 = 0 ; x1<2; x1++) {
             for( int y1 = 0 ; y1<2; y1++) {
+            for( int x1 = 0 ; x1<2; x1++) {
 			   
 			    maps::grid::MLSMapKalman::CellType::iterator patch = mls->at(x+x1,y+y1).begin();
 				if (patch == mls->at(x+x1,y+y1).end()) {
-							rect.vertices[x1+y1].vertex[0] = (x+x1) * mls->getResolution().x();
-							rect.vertices[x1+y1].vertex[1] = (y+y1) * mls->getResolution().y();
-							rect.vertices[x1+y1].is = false;	 
+							rect.vertices[x1+y1*2].vertex[0] = (x+x1) * mls->getResolution().x();
+							rect.vertices[x1+y1*2].vertex[1] = (y+y1) * mls->getResolution().y();
+							rect.vertices[x1+y1*2].is = false;	 
 				}
 				else{
 					    for(patch = mls->at(x+x1,y+y1).begin(); patch != mls->at(x+x1,y+y1).end(); patch++ )
 					    {
-				            isCollide[x1+y1] = patch->mean > minO2Height;  
-								rect.vertices[x1+y1].vertex[0] = (x+x1) * mls->getResolution().x();
-								rect.vertices[x1+y1].vertex[1] = (y+y1) * mls->getResolution().y();	 
-								rect.vertices[x1+y1].vertex[2] = patch->mean;
-								rect.vertices[x1+y1].is = true;	
+				            isCollide[x1+y1*2] = patch->mean > minO2Height;  
+								rect.vertices[x1+y1*2].vertex[0] = (x+x1) * mls->getResolution().x();
+								rect.vertices[x1+y1*2].vertex[1] = (y+y1) * mls->getResolution().y();	 
+								rect.vertices[x1+y1*2].vertex[2] = patch->mean;
+								rect.vertices[x1+y1*2].is = true;	
 									
 			                maxZ = dMAX(maxZ, patch->mean);
 			                minZ = dMIN(minZ, patch->mean);            
-					
+							//	 printf("(%fl) ",patch->mean);
 				        }   
 			    } 
 		    }}
@@ -86,6 +92,9 @@ int MLSCollision::dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapK
         if (minO2Height - maxZ > -dEpsilon ) 
         {
             //totally above Mlsfield
+#ifdef DEBUG_CONTACT_POS				
+			printf("tottaly above mls--> minO2Height,maxZ:break (%f %f)\n",minO2Height,maxZ);
+#endif  			                
             return 0;
         }
         
@@ -106,12 +115,18 @@ int MLSCollision::dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapK
 
             pContact->side1 = -1;
             pContact->side2 = -1;
+            
+#ifdef DEBUG_CONTACT_POS				
+			printf("tottaly under mls--> maxO2Height,minZ : (%f %f)\n",maxO2Height,minZ);
+#endif   
+			   
             return 0;
         }
         
 	int maxBoxNum = 4;
+	int maxSphereBoxContact = 1;
 	dxBox* colliding_box[maxBoxNum];
-
+    
 	for(int i=0; i<4; i++) colliding_box[i] = new dxBox (0,1,1,1);   //TODE space pointer has to be added
     
     for (unsigned int k = 0; k < numCollidingRects; k++)
@@ -129,21 +144,28 @@ int MLSCollision::dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapK
 		   colliding_box[i]->final_posr->pos[0] -= (colliding_box[i]->side[0]/2);   
 		   colliding_box[i]->final_posr->pos[1] -= (colliding_box[i]->side[1]/2); 	
 		   colliding_box[i]->final_posr->pos[2] /= 2;   	
-		   										
-		int collided = dCollideSphereBox (o2, colliding_box[i], flags, &mls_contacts, skip);			
-  
-		   if(collided && (numTerrainContacts < numMaxContactsPossible)) {	  			   
-  		       pContact = CONTACT(contact, numTerrainContacts*skip);			   
+
+		int collided = dCollideSphereBox (o2, colliding_box[i], maxSphereBoxContact, &mls_contacts, skip);			
+		   if(collided && (numTerrainContacts < flags)) {	  			   
+  		       pContact = CONTACT(contact, numTerrainContacts*skip);	
+  		       // given a pointer `contact' to a dContactGeom, return the dContactGeom at contact + numTerrainContacts*skip bytes.		   
 		       dVector3Copy(mls_contacts.pos, pContact->pos);
                //create contact using Plane Normal
                dOPESIGN(pContact->normal, =, -, mls_contacts.normal);	                      
 		       pContact->depth = mls_contacts.depth;	
-	 
-	           numTerrainContacts++;	 		
+    
+            pContact->side1 = -1;
+            pContact->side2 = -1;
+            
+#ifdef DEBUG_CONTACT_POS				
+			 printf("++collided++, (i k)(%d %d), numContacts(%d), p(%f, %f, %f), n(%f %f %f), d(%f) \n",i,k,
+			 numTerrainContacts,pContact->pos[0],pContact->pos[1],pContact->pos[2],
+			 pContact->normal[0],pContact->normal[1],pContact->normal[2],pContact->depth);
+#endif 			 			
+			numTerrainContacts++;	 
 		   } 
-
- 	   
 		}
+
 
 	} 
 	for(int i=0; i<maxBoxNum; i++) delete colliding_box[i];   
@@ -160,8 +182,12 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
 	dIASSERT( skip >= (int)sizeof(dContactGeom) );
     dIASSERT( o1->type == 14 );
     dIASSERT((flags & NUMC_MASK) >= 1);
-	      
-    //int numMaxTerrainContacts = (flags & NUMC_MASK);
+    
+           widthX  = mls->getSize().x();
+           widthY  = mls->getSize().y();
+           
+		   HalfWidthX = widthX/REAL(2.0);
+		   HalfWidthY = widthY/REAL(2.0);
 
     dVector3 posbak;
     dMatrix3 Rbak;
@@ -173,16 +199,12 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
     int numTerrainContacts = 0;
     int numTerrainOrigContacts = 0;
 
-    //@@ Should find a way to set reComputeAABB to false in default case
-    // aka DHEIGHTFIELD_CORNER_ORIGIN not defined and terrain not PLACEABLE
-    // so that we can free some memory and speed up things a bit
-    // while saving some precision loss 
 #ifndef DHEIGHTFIELD_CORNER_ORIGIN
 
     const bool reComputeAABB = true;
 #else
     const bool reComputeAABB = ( terrain->gflags & GEOM_PLACEABLE ) ? true : false;
-#endif //DHEIGHTFIELD_CORNER_ORIGIN
+#endif 
 
     if (reComputeAABB)
     {
@@ -207,7 +229,7 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
 #ifndef DHEIGHTFIELD_CORNER_ORIGIN
     o2->final_posr->pos[ 0 ] += HalfWidthX;
     o2->final_posr->pos[ 1 ] += HalfWidthY;
-#endif // DHEIGHTFIELD_CORNER_ORIGIN   
+#endif 
 		
     // Rebuild AABB for O2
     if (reComputeAABB)
@@ -243,8 +265,7 @@ int MLSCollision::collide(dGeomID o1, dGeomID o2, int flags, dContactGeom* conta
 		int numMaxTerrainContacts = flags;    
  	       
         numTerrainContacts += dCollideSphereMls(mls,
-            nMinX,nMaxX,nMinY,nMaxY,o2,numMaxTerrainContacts,
-            flags,CONTACT(contact,numTerrainContacts*skip),skip	);
+            nMinX,nMaxX,nMinY,nMaxY,o2,flags,CONTACT(contact,numTerrainContacts*skip),skip	);
     
         dIASSERT( numTerrainContacts <= numMaxTerrainContacts );
     }
@@ -281,7 +302,7 @@ dCollideMlsExit:
 #ifndef DHEIGHTFIELD_CORNER_ORIGIN
                 pos0[ 0 ] -= HalfWidthX;
                 pos0[ 1 ] -= HalfWidthY;
-#endif // !DHEIGHTFIELD_CORNER_ORIGIN
+#endif 
 
                 dMultiply0_331( pContact->pos, o1->final_posr->R, pos0 );
 
@@ -301,7 +322,7 @@ dCollideMlsExit:
                 pContact->pos[ 1 ] -= HalfWidthY;
             }
         }
-#endif // !DHEIGHTFIELD_CORNER_ORIGIN
+#endif 
     }
     // Return contact count.    
     return numTerrainContacts;   
@@ -310,11 +331,10 @@ dCollideMlsExit:
 
 void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<maps::grid::MLSMapKalman>& mls)
 {	
- 
-           MinHeight = -2.0;
+           MinHeight = -2.0;   //this value is the same value as the default height when creating heightfield in NodePhysics.cpp in MARS
            MaxHeight =  2.0;
-           widthX  = mls->getNumCells().x()*mls->getResolution().x();
-           widthY  = mls->getNumCells().y()*mls->getResolution().y();
+           widthX  = mls->getSize().x();//mls->getNumCells().x()*mls->getResolution().x();
+           widthY  = mls->getSize().y();//mls->getNumCells().y()*mls->getResolution().y();
            bool gflags = true;
            bool WrapMode = false;  //This has to be true in case to use infinite surface
            
@@ -323,11 +343,10 @@ void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<ma
                           
     if ( WrapMode == 0 )
     {
-        // Finite
+		// Finite
         if ( gflags & GEOM_PLACEABLE )
         {
             dReal dx[6], dy[6], dz[6];
-
             // Y-axis
             if (MinHeight != -dInfinity)
             {
@@ -385,7 +404,7 @@ void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<ma
             dy[3] = ( o->final_posr->R[ 1] * HalfWidthY );
             dy[4] = ( o->final_posr->R[ 5] * HalfWidthY );
             dy[5] = ( o->final_posr->R[ 9] * HalfWidthY );
-
+            
 #endif // DHEIGHTFIELD_CORNER_ORIGIN
 
             // X extents
@@ -405,6 +424,7 @@ void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<ma
                 dMIN3( dMIN( dx[2], dx[5] ), dMIN( dy[2], dy[5] ), dMIN( dz[2], dz[5] ) );
             aabb[5] = o->final_posr->pos[2] +
                 dMAX3( dMAX( dx[2], dx[5] ), dMAX( dy[2], dy[5] ), dMAX( dz[2], dz[5] ) );
+           
         }
         else
         {
@@ -414,13 +434,15 @@ void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<ma
             aabb[0] = 0;					aabb[1] = widthX;
             aabb[2] = 0;					aabb[3] = widthY;
             aabb[4] = MinHeight;			aabb[5] = MaxHeight;
+            
+
 
 #else // DHEIGHTFIELD_CORNER_ORIGIN
 
             aabb[0] = -widthX/REAL(2.0);	aabb[1] = +widthX/REAL(2.0);
             aabb[2] = -widthY/REAL(2.0);	aabb[3] = +widthY/REAL(2.0);
             aabb[4] =  MinHeight;	   		aabb[5] =  MaxHeight;
-
+                                    
 #endif // DHEIGHTFIELD_CORNER_ORIGIN
 
         }
@@ -441,9 +463,10 @@ void MLSCollision::getAABB (dGeomID o, dReal aabb[6], const boost::shared_ptr<ma
             aabb[4] =  MinHeight;			aabb[5] =  MaxHeight;
         }
     }
-          
-   
-           
+#ifdef DEBUG_AABB				
+	 printf(".aabb[0-5](%lf %lf %lf %lf %lf %lf)\n", aabb[0],aabb[1],aabb[2],aabb[3],aabb[4],aabb[5]);
+#endif   
+
 }
 
 
