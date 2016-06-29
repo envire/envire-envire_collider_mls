@@ -6,7 +6,8 @@
 #include <boost/test/unit_test.hpp>
 #include <envire_collider_mls/MLSCollision.hpp>
 
-#include <boost/shared_ptr.hpp>
+#define	DEGTORAD			0.01745329251994329577f				//!< PI / 180.0, convert degrees to radians
+//#include <boost/shared_ptr.hpp>
 
 using namespace envire::collision;
 
@@ -19,10 +20,12 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
 		MLSCollision* c = MLSCollision::getInstance();
 		BOOST_CHECK(c != NULL);
 		BOOST_CHECK(c->getGeomID() == -1);
-	
-		std::ifstream input("MLSMapKalman_waves.bin",  std::ios::binary);
+
+		std::string env_path("MLSMapKalman_waves.bin");
+		std::ifstream input(env_path,  std::ios::binary);
+		//std::ifstream input("MLSMapKalman_waves.bin",  std::ios::binary);		
 		boost::archive::polymorphic_binary_iarchive  ia(input);
-	
+		
 		maps::grid::MLSMapKalman mls_kalman;
 		ia >> mls_kalman;
 	
@@ -32,7 +35,7 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
         BOOST_TEST_MESSAGE("mls cell number: "<< mls->getNumCells().x() <<", "<< mls->getNumCells().y());
  	    BOOST_TEST_MESSAGE("mls size: "<< mls->getSize().x()<<", "<<mls->getSize().y());   
         BOOST_TEST_MESSAGE("mls mean value on (x,y): "<< mls->at(0,0).begin()->mean);
-    	            
+	    	            
 		// create first geom
 		dGeomID geom_mls = c->createNewCollisionObject(mls);
 		BOOST_CHECK(geom_mls->type == 14);
@@ -40,9 +43,19 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
         c->widthX  = mls->getSize().x();
         c->widthY  = mls->getSize().y();   		
       
-        geom_mls->aabb[0] = -10.0;					geom_mls->aabb[1] = +10.0;
-        geom_mls->aabb[2] = -10.0;					geom_mls->aabb[3] = +10.0;                   
-        geom_mls->aabb[4] = -2.0;					geom_mls->aabb[5] = 2.0;
+    dVector3 pos;
+	pos[ 0 ] = 0;
+	pos[ 1 ] = 0;
+	pos[ 2 ] = 0;
+
+	// Rotate so Z is up, not Y (which is the default orientation)
+	dMatrix3 R;
+	dRSetIdentity( R );
+	//dRFromAxisAndAngle( R, 1, 0, 0, DEGTORAD * 90 );
+
+	// Place it.
+	dGeomSetRotation( geom_mls, R );
+	dGeomSetPosition( geom_mls, pos[0], pos[1], pos[2] );
         
         // check interface
         BOOST_CHECK(c->getGeomID() >= dFirstUserClass);
@@ -62,9 +75,9 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
 
         for(int k=0;k<100;k++)
         {
-			dGeomSetPosition (geom_sphere,0.1,0.0,ini_z-0.01*(float)k);
+			dGeomSetPosition (geom_sphere,0.0,0.0,ini_z-0.01*(float)k);
 			const dReal *pos2 = dGeomGetPosition(geom_sphere);
-			BOOST_TEST_MESSAGE("pos of geom_sphere: "<< pos2[2]);  			
+			BOOST_TEST_MESSAGE("pos of geom_sphere: "<< pos2[2]);  	
 			
 			if(int numc = dCollide(geom_mls, geom_sphere, maxNumContacts,  &contact[0].geom, sizeof(dContact)))
 			{ 
