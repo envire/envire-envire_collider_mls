@@ -15,8 +15,8 @@
      
 //#define DHEIGHTFIELD_CORNER_ORIGIN
 #define GEOM_PLACEABLE 1
-#define DEBUG_AABB
-#define DEBUG_CONTACT_POS
+//#define DEBUG_AABB
+//#define DEBUG_CONTACT_POS
 
 using namespace envire::collision;
 
