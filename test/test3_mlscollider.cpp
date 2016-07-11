@@ -15,13 +15,14 @@ using namespace envire::collision;
 BOOST_AUTO_TEST_CASE(test_box_collision)
 {
 
+
     dInitODE();
     {
 		MLSCollision* c = MLSCollision::getInstance();
 		BOOST_CHECK(c != NULL);
 		BOOST_CHECK(c->getGeomID() == -1);
 
-		std::string env_path("MLSMapKalman_waves.bin");
+		std::string env_path("./mlsdata/MLSMapKalman_waves.bin");
 		std::ifstream input(env_path,  std::ios::binary);
 		//std::ifstream input("MLSMapKalman_waves.bin",  std::ios::binary);		
 		boost::archive::polymorphic_binary_iarchive  ia(input);
