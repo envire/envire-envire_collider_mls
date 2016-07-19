@@ -1,6 +1,6 @@
 
 #include <fstream>
-#include <boost/archive/polymorphic_binary_iarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 #include <maps/grid/MLSMap.hpp>
 
 #include <boost/test/unit_test.hpp>
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
 		std::string env_path("./mlsdata/MLSMapKalman_waves.bin");
 		std::ifstream input(env_path,  std::ios::binary);
 		//std::ifstream input("MLSMapKalman_waves.bin",  std::ios::binary);		
-		boost::archive::polymorphic_binary_iarchive  ia(input);
+		boost::archive::binary_iarchive  ia(input);
 		
 		maps::grid::MLSMapKalman mls_kalman;
 		ia >> mls_kalman;

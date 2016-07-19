@@ -1,5 +1,5 @@
 #include <fstream>
-#include <boost/archive/polymorphic_binary_iarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 #include <maps/grid/MLSMap.hpp>
 
 int main(int argc, char **argv) {
@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 
 
 	std::ifstream input(argv[1],  std::ios::binary);
-	boost::archive::polymorphic_binary_iarchive  ia(input);
+	boost::archive::binary_iarchive  ia(input);
 
 	maps::grid::MLSMapKalman mls_kalman;
 
