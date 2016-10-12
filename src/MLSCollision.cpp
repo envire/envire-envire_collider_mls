@@ -68,14 +68,14 @@ int MLSCollision::dCollideSphereMls( const boost::shared_ptr<maps::grid::MLSMapK
 				else{
 					    for(patch = mls->at(x+x1,y+y1).begin(); patch != mls->at(x+x1,y+y1).end(); patch++ )
 					    {
-				            isCollide[x1+y1*2] = patch->mean > minO2Height;  
+				            isCollide[x1+y1*2] = patch->getMean() > minO2Height;  
 								rect.vertices[x1+y1*2].vertex[0] = (x+x1) * mls->getResolution().x();
 								rect.vertices[x1+y1*2].vertex[1] = (y+y1) * mls->getResolution().y();	 
-								rect.vertices[x1+y1*2].vertex[2] = patch->mean;
+								rect.vertices[x1+y1*2].vertex[2] = patch->getMean();
 								rect.vertices[x1+y1*2].is = true;	
 									
-			                maxZ = dMAX(maxZ, patch->mean);
-			                minZ = dMIN(minZ, patch->mean);            
+			                maxZ = dMAX(maxZ, patch->getMean());
+			                minZ = dMIN(minZ, patch->getMean());            
 							//	 printf("(%fl) ",patch->mean);
 				        }   
 			    } 

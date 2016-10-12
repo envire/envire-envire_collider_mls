@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(test_box_collision)
  	    BOOST_TEST_MESSAGE("mls resolution: " << mls->getResolution().x() <<", "<< mls->getResolution().y());   
         BOOST_TEST_MESSAGE("mls cell number: "<< mls->getNumCells().x() <<", "<< mls->getNumCells().y());
  	    BOOST_TEST_MESSAGE("mls size: "<< mls->getSize().x()<<", "<<mls->getSize().y());   
-        BOOST_TEST_MESSAGE("mls mean value on (x,y): "<< mls->at(0,0).begin()->mean);
+        BOOST_TEST_MESSAGE("mls mean value on (x,y): "<< mls->at(0,0).begin()->getMean());
 	    	            
 		// create first geom
 		dGeomID geom_mls = c->createNewCollisionObject(mls);
